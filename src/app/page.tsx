@@ -1,69 +1,146 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
+import { ChevronDown, FileDown, Lock } from "lucide-react";
+import { LeadCaptureModal } from "@/components/LeadCaptureModal";
+import { ProductCatalog } from "@/components/ProductCatalog";
+import { type Product } from "@/data/products";
+
+const MIKAZONE_LOGO =
+  "https://res.cloudinary.com/dgphys1xd/image/upload/v1788991971/PHOTO-2026-09-07-18-40-08_zw0udk.jpg";
 
 export default function Home() {
+  const eventPin = process.env.NEXT_PUBLIC_EVENT_PIN;
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+
+  function openFullDossier() {
+    setSelectedProductIds([]);
+    setModalOpen(true);
+  }
+
+  function openProductSpecs(product: Product) {
+    setSelectedProductIds([product.id]);
+    setModalOpen(true);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex min-h-full flex-col bg-white">
+      <section className="relative w-full overflow-hidden bg-white">
+        <div
+          aria-hidden="true"
+          className="hero-mesh pointer-events-none absolute inset-0 opacity-70"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 top-12 size-72 rounded-full bg-mika/10 blur-3xl"
+        />
+
+        <div className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4">
             <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+              src={MIKAZONE_LOGO}
+              alt="MikaZone USA — Mancam Global Supply"
+              width={320}
+              height={107}
+              priority
+              className="h-14 w-auto max-w-[min(70%,240px)] object-contain object-left sm:h-16 sm:max-w-[300px]"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <div className="shrink-0 text-right">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-mika sm:text-[11px]">
+                Official partner
+              </p>
+              {eventPin ? (
+                <p className="mt-1 text-[11px] font-medium text-slate-400">
+                  Event {eventPin}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="relative mx-auto flex min-h-[72vh] max-w-7xl flex-col justify-center px-4 pb-28 pt-10 sm:px-6 sm:pt-16 lg:px-8 lg:pb-32">
+          <p
+            className="hero-fade text-sm font-semibold uppercase tracking-[0.28em] text-mika"
+            style={{ animationDelay: "60ms" }}
           >
-            Documentation
+            BuildExpo South Florida 2026
+          </p>
+          <h1
+            className="hero-fade mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-6xl sm:leading-[1.05]"
+            style={{ animationDelay: "140ms" }}
+          >
+            High Performance{" "}
+            <span className="text-mika">Construction Additives</span>
+          </h1>
+          <p
+            className="hero-fade mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg"
+            style={{ animationDelay: "220ms" }}
+          >
+            Scan the stand QR, register once, and leave with the full MikaZone
+            technical dossier and pricing — cellulose ethers, VAE RPP, and
+            specialty powders for dry-mix plants.
+          </p>
+
+          <div
+            className="hero-fade mt-10 flex flex-col gap-4 sm:flex-row sm:items-center"
+            style={{ animationDelay: "320ms" }}
+          >
+            <button
+              type="button"
+              onClick={openFullDossier}
+              className="inline-flex min-h-14 w-full items-center justify-center gap-3 bg-green-600 px-6 text-sm font-bold tracking-wide text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-green-700 sm:min-h-16 sm:w-auto sm:min-w-[22rem] sm:px-8 sm:text-base"
+            >
+              <FileDown className="size-5 shrink-0 sm:size-6" />
+              DOWNLOAD TECHNICAL DOSSIER & PRICING
+            </button>
+            <a
+              href="#catalog"
+              className="inline-flex min-h-12 items-center justify-center px-2 text-sm font-semibold text-slate-500 underline-offset-4 hover:text-mika hover:underline"
+            >
+              Browse grades below
+            </a>
+          </div>
+        </div>
+
+        <a
+          href="#catalog"
+          className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-1 text-mika"
+          aria-label="Scroll to technical catalog"
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+            Catalog
+          </span>
+          <ChevronDown className="size-7 animate-bounce" />
+        </a>
+      </section>
+
+      <ProductCatalog onViewSpecs={openProductSpecs} />
+
+      <LeadCaptureModal
+        key={modalOpen ? selectedProductIds.join("|") || "dossier" : "closed"}
+        open={modalOpen}
+        initialProductIds={selectedProductIds}
+        dossierMode={selectedProductIds.length === 0}
+        onClose={() => setModalOpen(false)}
+      />
+
+      <footer className="mt-auto w-full bg-slate-900">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <p className="text-xs text-white/35">
+            Mancam Global Supply · Official MikaZone USA partner
+          </p>
+          <a
+            href="/admin/leads"
+            className="inline-flex size-9 items-center justify-center text-white/25 transition hover:text-mika"
+            aria-label="Stand team — prospect dashboard"
+            title="Stand team"
+          >
+            <Lock className="size-4" />
           </a>
         </div>
-      </main>
+      </footer>
     </div>
   );
 }
