@@ -84,20 +84,22 @@ export type Product = {
   packaging: ProductPackaging;
   recommendedDosage: string;
   accent: string;
+  starProduct?: boolean;
+  badge?: string;
 };
 
 export const PRODUCTS: readonly Product[] = [
   {
     id: "hpmc-mhec",
     slug: "cellulose-ethers-hpmc-mhec",
-    sku: "MK-HPMC / MK-MHEC",
-    name: "Cellulose Ethers (HPMC / MHEC)",
-    shortName: "HPMC / MHEC",
+    sku: "MK 200P",
+    name: "Cellulose Ether HPMC (Grade MK 200P)",
+    shortName: "HPMC MK 200P",
     brand: "MikaZone",
     chemicalName:
-      "Hydroxypropyl Methylcellulose (HPMC) / Hydroxyethyl Methylcellulose (MHEC / HEMC)",
+      "Hydroxypropyl Methylcellulose (HPMC) — Grade MK 200P, high water retention and open time",
     summary:
-      "Core water-retention and workability package for dry-mix mortars, tile adhesives, gypsum plasters, and EIFS. Available across viscosity and substitution grades, including surface-treated options for delayed hydration.",
+      "Star cellulose ether for dry-mix mortar plants: high water retention, extended open time, and controlled slip. Grade MK 200P is the BuildExpo duo with VAE RPP 3510 for C2 tile adhesives, putties, and EIFS.",
     category: "mortars",
     applications: [
       "C2 tile adhesives and large-format thin-set",
@@ -134,7 +136,61 @@ export const PRODUCTS: readonly Product[] = [
       notes: "Keep sealed, dry, and cool. Shelf life 24 months in original packaging.",
     },
     recommendedDosage: "0.20 – 0.50% of dry mix (up to 0.60% in gypsum plasters)",
+    accent: "#10B981",
+    starProduct: true,
+    badge: "⭐ STAR PRODUCT / EXPO SPECIAL",
+  },
+  {
+    id: "vae-rpp",
+    slug: "vae-redispersible-polymer-powder",
+    sku: "MK 3510",
+    name: "MIKA VAE Redispersible Polymer Powder (Grade 3510)",
+    shortName: "VAE RPP 3510",
+    brand: "MikaVAE",
+    chemicalName:
+      "Vinyl acetate–ethylene copolymer redispersible polymer powder — Grade 3510, premium flexibility and adhesion",
+    summary:
+      "Star RPP for flexible C2 adhesives and EIFS. Grade 3510 redisperses to a tough VAE film for adhesion, crack bridging, and freeze–thaw durability — the BuildExpo pair with HPMC MK 200P.",
+    category: "mortars",
+    applications: [
+      "Flexible and deformable tile adhesives (C2TES1 / S2)",
+      "EIFS / ETICS adhesive, base coat, and finishing mortar",
+      "Waterproofing and repair mortars",
+      "Self-leveling compounds and floor overlays",
+      "Gypsum joint fillers and skim coats",
+    ],
+    benefits: [
+      "Higher tensile adhesion and cohesive strength",
+      "Improved flexibility and crack bridging",
+      "Better freeze–thaw and wet abrasion resistance",
+      "Synergistic with HPMC MK 200P for open time and slip",
+    ],
+    specifications: {
+      appearance: "White free-flowing powder",
+      pH: "5.0 – 8.0 (10% dispersion)",
+      moisture: "≤ 2%",
+      particleSize: "≥ 98% pass 80 mesh",
+      bulkDensity: "400 – 600 g/L",
+      solidContent: "≥ 98%",
+      ashContent: "10 – 14% (protective colloid / mineral)",
+      casNumber: "24937-78-8",
+      hsCode: "39019090",
+      additional: [
+        { label: "Grade", value: "3510" },
+        { label: "Glass transition (Tg)", value: "0 – 16 °C (grade dependent)" },
+        { label: "Minimum film forming temp.", value: "0 – 5 °C typical" },
+        { label: "Protective colloid", value: "Polyvinyl alcohol" },
+      ],
+    },
+    packaging: {
+      primary: "25 kg PE-lined paper bag",
+      pallet: "500 kg or 1,000 kg per pallet",
+      notes: "Protect from humidity and stacking compression. Shelf life 12 months.",
+    },
+    recommendedDosage: "1 – 5% of dry mix (3 – 8% in flexible C2TES1 / S2 adhesives)",
     accent: "#1A6FB5",
+    starProduct: true,
+    badge: "⭐ STAR PRODUCT / EXPO SPECIAL",
   },
   {
     id: "hec",
@@ -181,54 +237,6 @@ export const PRODUCTS: readonly Product[] = [
     },
     recommendedDosage: "0.20 – 0.60% of total paint formulation (0.3 – 1.0% in high-build coatings)",
     accent: "#0E8A6A",
-  },
-  {
-    id: "vae-rpp",
-    slug: "vae-redispersible-polymer-powder",
-    sku: "MIKA VAE MK3510N",
-    name: "MIKA VAE Redispersible Polymer Powder (RPP)",
-    shortName: "MIKA VAE RPP",
-    brand: "MikaVAE",
-    chemicalName: "Vinyl acetate–ethylene copolymer redispersible polymer powder",
-    summary:
-      "Spray-dried VAE latex that redisperses in water to add flexibility, adhesion, and cohesion to cement and gypsum dry mixes. Designed to work with MikaZone cellulose ethers in tile adhesives, ETICS, and waterproofing mortars.",
-    category: "mortars",
-    applications: [
-      "Flexible and deformable tile adhesives (C2TES1 / S2)",
-      "EIFS / ETICS adhesive, base coat, and finishing mortar",
-      "Waterproofing and repair mortars",
-      "Self-leveling compounds and floor overlays",
-      "Gypsum joint fillers and skim coats",
-    ],
-    benefits: [
-      "Higher tensile adhesion and cohesive strength",
-      "Improved flexibility and crack bridging",
-      "Better freeze–thaw and wet abrasion resistance",
-      "Synergistic with HPMC / MHEC for open time and slip",
-    ],
-    specifications: {
-      appearance: "White free-flowing powder",
-      pH: "5.0 – 8.0 (10% dispersion)",
-      moisture: "≤ 2%",
-      particleSize: "≥ 98% pass 80 mesh",
-      bulkDensity: "400 – 600 g/L",
-      solidContent: "≥ 98%",
-      ashContent: "10 – 14% (protective colloid / mineral)",
-      casNumber: "24937-78-8",
-      hsCode: "39019090",
-      additional: [
-        { label: "Glass transition (Tg)", value: "0 – 16 °C (grade dependent)" },
-        { label: "Minimum film forming temp.", value: "0 – 5 °C typical" },
-        { label: "Protective colloid", value: "Polyvinyl alcohol" },
-      ],
-    },
-    packaging: {
-      primary: "25 kg PE-lined paper bag",
-      pallet: "500 kg or 1,000 kg per pallet",
-      notes: "Protect from humidity and stacking compression. Shelf life 12 months.",
-    },
-    recommendedDosage: "1 – 5% of dry mix (3 – 8% in flexible C2TES1 / S2 adhesives)",
-    accent: "#7A4FBF",
   },
   {
     id: "starch-ether-hps",
@@ -561,6 +569,8 @@ export const PRODUCTS: readonly Product[] = [
 ];
 
 export type ProductId = (typeof PRODUCTS)[number]["id"];
+
+export const STAR_PRODUCT_IDS = ["hpmc-mhec", "vae-rpp"] as const;
 
 export function getProductById(id: string): Product | undefined {
   return PRODUCTS.find((product) => product.id === id);

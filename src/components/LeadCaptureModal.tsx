@@ -34,7 +34,13 @@ import {
   X,
 } from "lucide-react";
 import { submitLead } from "@/app/actions/leads";
-import { PRODUCTS, getProductsByIds, type Product } from "@/data/products";
+import {
+  PRODUCTS,
+  STAR_PRODUCT_IDS,
+  getProductsByIds,
+  type Product,
+} from "@/data/products";
+import { WHATSAPP_HREF } from "@/lib/contact";
 import {
   PRIMARY_APPLICATIONS,
   PRIMARY_APPLICATION_LABELS,
@@ -143,7 +149,9 @@ export function LeadCaptureModal({
   const dialogRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<FormState>(() => ({
     ...emptyForm,
-    productsOfInterest: [...initialProductIds],
+    productsOfInterest: [
+      ...new Set([...STAR_PRODUCT_IDS, ...initialProductIds]),
+    ],
   }));
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -272,7 +280,6 @@ export function LeadCaptureModal({
         downloadProductDatasheets(productsForPdf);
         setStatusTone("success");
         setStatusMessage("Datasheet downloading. Our team will follow up.");
-        window.setTimeout(onClose, 900);
         return;
       }
 
@@ -289,7 +296,6 @@ export function LeadCaptureModal({
       setStatusMessage(
         "No connection right now. Your request was saved on this device and the PDF is downloading.",
       );
-      window.setTimeout(onClose, 1400);
     });
   }
 
@@ -347,19 +353,20 @@ export function LeadCaptureModal({
                   <DossierSnapshot />
                 )}
 
-                {dossierMode ? null : (
-                  <fieldset className="mt-4">
-                    <legend className="text-sm font-semibold text-slate-900">
-                      Products of interest
-                    </legend>
-                    <p className="mt-1 text-xs text-slate-500">Select one or more grades.</p>
-                    <ProductChips
-                      selectedIds={form.productsOfInterest}
-                      onToggle={toggleProduct}
-                    />
-                    <FieldError message={firstError(fieldErrors, "productsOfInterest")} />
-                  </fieldset>
-                )}
+                <fieldset className="mt-4">
+                  <legend className="text-sm font-semibold text-slate-900">
+                    Products of interest
+                  </legend>
+                  <p className="mt-1 text-xs text-slate-500">
+                    HPMC 200P and RPP 3510 are pre-selected for the stand. Add or
+                    remove grades as needed.
+                  </p>
+                  <ProductChips
+                    selectedIds={form.productsOfInterest}
+                    onToggle={toggleProduct}
+                  />
+                  <FieldError message={firstError(fieldErrors, "productsOfInterest")} />
+                </fieldset>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -503,18 +510,29 @@ export function LeadCaptureModal({
           </div>
 
           <div className="border-t border-slate-200 bg-white px-5 py-4 sm:px-6">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="flex h-14 w-full items-center justify-center gap-2 bg-gold text-base font-bold text-slate-900 transition hover:bg-gold-dark disabled:opacity-60"
-            >
-              {isPending ? (
-                <LoaderCircle className="size-5 animate-spin" />
-              ) : (
-                <Download className="size-5" />
-              )}
-              {isPending ? "Sending…" : "Register & Unlock PDF"}
-            </button>
+            {statusTone === "success" || statusTone === "offline" ? (
+              <a
+                href={WHATSAPP_HREF}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-14 w-full items-center justify-center gap-2 bg-[#25D366] text-base font-bold text-white transition hover:bg-[#1ebe5d]"
+              >
+                Open WhatsApp with Rep
+              </a>
+            ) : (
+              <button
+                type="submit"
+                disabled={isPending}
+                className="flex h-14 w-full items-center justify-center gap-2 bg-gold text-base font-bold text-slate-900 transition hover:bg-gold-dark disabled:opacity-60"
+              >
+                {isPending ? (
+                  <LoaderCircle className="size-5 animate-spin" />
+                ) : (
+                  <Download className="size-5" />
+                )}
+                {isPending ? "Sending…" : "Register & Unlock PDF"}
+              </button>
+            )}
           </div>
         </form>
       </div>
@@ -547,6 +565,7 @@ function ProductChips({
           >
             <span className="inline-flex items-center gap-1.5">
               {selected ? <Check className="size-3.5" /> : null}
+              {product.starProduct ? "⭐ " : null}
               {product.shortName}
             </span>
           </button>

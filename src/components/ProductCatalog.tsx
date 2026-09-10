@@ -94,6 +94,12 @@ function ProductCard({
           <span className="font-mono text-[11px] text-slate-400">{product.sku}</span>
         </div>
 
+        {product.badge ? (
+          <p className="mt-3 inline-flex w-fit rounded-sm border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold tracking-[0.08em] text-emerald-800">
+            {product.badge}
+          </p>
+        ) : null}
+
         <h3 className="mt-4 text-xl font-semibold leading-7 text-slate-900">
           {product.name}
         </h3>
