@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ChevronDown, FileDown, Lock } from "lucide-react";
+import { Hero3DIntro } from "@/components/Hero3DIntro";
 import { LeadCaptureModal } from "@/components/LeadCaptureModal";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { type Product } from "@/data/products";
@@ -27,6 +28,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-full flex-col bg-white">
+      <Hero3DIntro />
       <section className="relative w-full overflow-hidden bg-white">
         <div
           aria-hidden="true"
@@ -78,9 +80,9 @@ export default function Home() {
             className="hero-fade mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg"
             style={{ animationDelay: "220ms" }}
           >
-            Scan the stand QR, register once, and leave with the full MikaZone
-            technical dossier and pricing — cellulose ethers, VAE RPP, and
-            specialty powders for dry-mix plants.
+            Direct factory supply for dry-mix mortar plants, coatings
+            formulators, and concrete producers. Download full technical
+            dossiers, TDS, and volume pricing.
           </p>
 
           <div
@@ -90,7 +92,7 @@ export default function Home() {
             <button
               type="button"
               onClick={openFullDossier}
-              className="inline-flex min-h-14 w-full items-center justify-center gap-3 bg-green-600 px-6 text-sm font-bold tracking-wide text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-green-700 sm:min-h-16 sm:w-auto sm:min-w-[22rem] sm:px-8 sm:text-base"
+              className="inline-flex min-h-14 w-full items-center justify-center gap-3 bg-[#10B981] px-6 text-sm font-bold tracking-wide text-white shadow-lg shadow-emerald-500/30 transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-emerald-700/30 sm:min-h-16 sm:w-auto sm:min-w-[22rem] sm:px-8 sm:text-base"
             >
               <FileDown className="size-5 shrink-0 sm:size-6" />
               DOWNLOAD TECHNICAL DOSSIER & PRICING

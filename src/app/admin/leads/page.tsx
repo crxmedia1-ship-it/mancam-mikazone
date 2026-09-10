@@ -8,6 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import Image from "next/image";
 import {
   Download,
   LoaderCircle,
@@ -30,6 +31,8 @@ import { createSupabaseClient } from "@/lib/supabase";
 
 const ADMIN_UNLOCK_KEY = "mancam-mikazone:admin-unlocked";
 const EVENT_PIN = process.env.NEXT_PUBLIC_EVENT_PIN ?? "";
+const MIKAZONE_LOGO =
+  "https://res.cloudinary.com/dgphys1xd/image/upload/v1788991971/PHOTO-2026-09-07-18-40-08_zw0udk.jpg";
 
 const unlockListeners = new Set<() => void>();
 let memoryUnlocked = false;
@@ -133,7 +136,7 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const expectedLength = EVENT_PIN.length || 4;
 
-  function evaluatePin(nextPin: string) {
+  function evaluatePin(nextPin: string, force = false) {
     if (!EVENT_PIN) {
       setError("NEXT_PUBLIC_EVENT_PIN is not configured.");
       setPin("");
@@ -141,6 +144,7 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
     }
     if (nextPin.length < expectedLength) {
       setPin(nextPin);
+      if (force) setError("Enter the full event PIN.");
       return;
     }
     if (nextPin === EVENT_PIN) {
@@ -158,16 +162,23 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
   }
 
   return (
-    <div className="flex min-h-full flex-1 items-center justify-center bg-navy px-4 py-10 text-white">
-      <div className="w-full max-w-sm rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-sm">
-        <div className="flex size-12 items-center justify-center rounded-2xl bg-gold text-navy">
-          <Lock className="size-6" />
-        </div>
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+    <div className="flex min-h-full flex-1 items-center justify-center bg-slate-50 px-4 py-10">
+      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <Image
+          src={MIKAZONE_LOGO}
+          alt="MikaZone USA"
+          width={240}
+          height={80}
+          priority
+          className="mx-auto h-12 w-auto object-contain"
+        />
+        <p className="mt-5 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
           Stand team
         </p>
-        <h1 className="mt-2 text-2xl font-semibold">Commercial panel</h1>
-        <p className="mt-2 text-sm leading-6 text-white/70">
+        <h1 className="mt-2 text-center text-2xl font-semibold text-slate-900">
+          Commercial panel
+        </h1>
+        <p className="mt-2 text-center text-sm leading-6 text-slate-500">
           Enter the event PIN to see live prospects, rate conversations, and
           export Excel.
         </p>
@@ -177,7 +188,7 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
             <span
               key={index}
               className={`size-3 rounded-full ${
-                pin.length > index ? "bg-gold" : "bg-white/20"
+                pin.length > index ? "bg-emerald-500" : "bg-slate-200"
               }`}
             />
           ))}
@@ -189,7 +200,7 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
               key={digit}
               type="button"
               onClick={() => appendDigit(digit)}
-              className="h-14 rounded-2xl bg-white/10 text-xl font-semibold transition hover:bg-white/15"
+              className="h-14 rounded-xl border border-slate-200 bg-slate-50 text-xl font-semibold text-slate-800 transition hover:border-emerald-200 hover:bg-emerald-50"
             >
               {digit}
             </button>
@@ -200,27 +211,37 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
               setError(null);
               setPin("");
             }}
-            className="h-14 rounded-2xl bg-white/10 text-sm font-semibold text-white/80"
+            className="h-14 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-500"
           >
             Clear
           </button>
           <button
             type="button"
             onClick={() => appendDigit("0")}
-            className="h-14 rounded-2xl bg-white/10 text-xl font-semibold"
+            className="h-14 rounded-xl border border-slate-200 bg-slate-50 text-xl font-semibold text-slate-800"
           >
             0
           </button>
           <button
             type="button"
             onClick={() => setPin((current) => current.slice(0, -1))}
-            className="h-14 rounded-2xl bg-white/10 text-sm font-semibold text-white/80"
+            className="h-14 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-500"
           >
             Delete
           </button>
         </div>
 
-        {error ? <p className="mt-4 text-center text-sm text-red-300">{error}</p> : null}
+        <button
+          type="button"
+          onClick={() => evaluatePin(pin, true)}
+          className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-xl bg-emerald-600 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700"
+        >
+          Unlock panel
+        </button>
+
+        {error ? (
+          <p className="mt-4 text-center text-sm text-red-600">{error}</p>
+        ) : null}
       </div>
     </div>
   );
@@ -404,34 +425,45 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-sand">
-      <header className="border-b border-sand-200 bg-navy text-white">
+    <div className="flex min-h-full flex-1 flex-col bg-slate-50">
+      <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">
-              Mancam Global Supply
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold">Commercial panel</h1>
+          <div className="flex items-start gap-4">
+            <Image
+              src={MIKAZONE_LOGO}
+              alt="MikaZone USA"
+              width={180}
+              height={60}
+              className="mt-0.5 h-10 w-auto object-contain"
+            />
+            <div>
+              <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
+                Mancam Global Supply LLC • MikaZone Official Partner
+              </span>
+              <h1 className="mt-2 text-2xl font-semibold text-slate-900">
+                Commercial panel
+              </h1>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span
               aria-live="polite"
-              className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-sm"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
             >
-              <Users className="size-4 text-gold" />
+              <Users className="size-4 text-emerald-600" />
               <strong className="tabular-nums">{leads.length}</strong>
               live lead{leads.length === 1 ? "" : "s"}
               {live ? (
-                <Wifi className="size-4 text-emerald-300" />
+                <Wifi className="size-4 text-emerald-600" />
               ) : (
-                <WifiOff className="size-4 text-white/50" />
+                <WifiOff className="size-4 text-slate-400" />
               )}
             </span>
             <button
               type="button"
               onClick={() => void loadLeads("manual")}
               disabled={refreshing}
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-white/10 px-4 text-sm font-semibold disabled:opacity-60"
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
             >
               <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
               Refresh
@@ -440,19 +472,19 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
               type="button"
               onClick={() => void exportExcel()}
               disabled={exporting || leads.length === 0}
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-gold px-4 text-sm font-semibold text-navy disabled:opacity-60"
+              className="inline-flex h-11 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
             >
               {exporting ? (
                 <LoaderCircle className="size-4 animate-spin" />
               ) : (
                 <Download className="size-4" />
               )}
-              Export Excel
+              Exportar a Excel (.xlsx)
             </button>
             <button
               type="button"
               onClick={onLock}
-              className="inline-flex h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-semibold"
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 hover:bg-slate-50"
             >
               <Lock className="size-4" />
               Lock
@@ -464,17 +496,17 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6">
         {status ? (
           <p
-            className={`mb-4 rounded-2xl px-4 py-3 text-sm ${
+            className={`mb-4 rounded-xl border px-4 py-3 text-sm ${
               statusTone === "ok"
-                ? "bg-emerald-50 text-emerald-900"
-                : "bg-red-50 text-red-800"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+                : "border-red-200 bg-red-50 text-red-800"
             }`}
           >
             {status}
           </p>
         ) : null}
 
-        <div className="overflow-hidden rounded-3xl border border-sand-200 bg-white shadow-[0_10px_40px_rgba(10,31,61,0.06)]">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-20 text-slate-500">
               <LoaderCircle className="size-5 animate-spin" />
@@ -482,7 +514,7 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
             </div>
           ) : leads.length === 0 ? (
             <div className="px-6 py-20 text-center">
-              <p className="text-lg font-semibold text-navy">No prospects yet</p>
+              <p className="text-lg font-semibold text-slate-900">No prospects yet</p>
               <p className="mt-2 text-sm text-slate-500">
                 New stand registrations will appear here automatically.
               </p>
@@ -490,30 +522,33 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-[980px] w-full text-left text-sm">
-                <thead className="bg-sand/80 text-xs uppercase tracking-wide text-slate-500">
+                <thead className="bg-slate-100 text-xs font-bold uppercase tracking-wide text-slate-700">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">Contact</th>
-                    <th className="px-4 py-3 font-semibold">Company</th>
-                    <th className="px-4 py-3 font-semibold">Volume</th>
-                    <th className="px-4 py-3 font-semibold">Interest</th>
-                    <th className="px-4 py-3 font-semibold">Rating</th>
-                    <th className="px-4 py-3 font-semibold">Notes</th>
+                    <th className="px-4 py-3">Contact</th>
+                    <th className="px-4 py-3">Company</th>
+                    <th className="px-4 py-3">Volume</th>
+                    <th className="px-4 py-3">Interest</th>
+                    <th className="px-4 py-3">Rating</th>
+                    <th className="px-4 py-3">Notes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {leads.map((lead) => (
-                    <tr key={lead.id} className="border-t border-sand-200 align-top">
+                    <tr
+                      key={lead.id}
+                      className="border-t border-slate-200 align-top transition hover:bg-slate-50"
+                    >
                       <td className="px-4 py-4">
-                        <p className="font-semibold text-navy">{lead.fullName}</p>
+                        <p className="font-semibold text-slate-900">{lead.fullName}</p>
                         <a
                           href={`mailto:${lead.email}`}
-                          className="mt-1 block text-slate-600 hover:text-navy"
+                          className="mt-1 block text-slate-600 hover:text-emerald-700"
                         >
                           {lead.email}
                         </a>
                         <a
                           href={`tel:${lead.phone}`}
-                          className="mt-0.5 block text-slate-600 hover:text-navy"
+                          className="mt-0.5 block text-slate-600 hover:text-emerald-700"
                         >
                           {lead.phone}
                         </a>
@@ -522,7 +557,7 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
                         </p>
                       </td>
                       <td className="px-4 py-4">
-                        <p className="font-medium text-navy">{lead.companyName}</p>
+                        <p className="font-medium text-slate-900">{lead.companyName}</p>
                         <p className="mt-1 text-slate-500">
                           {profileLabel(lead.profileType)}
                         </p>
@@ -530,11 +565,11 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
                           {applicationLabel(lead.primaryApplication)}
                         </p>
                       </td>
-                      <td className="px-4 py-4 font-medium text-navy">
+                      <td className="px-4 py-4 font-medium text-slate-900">
                         {volumeLabel(lead.purchaseVolume)}
                       </td>
-                      <td className="px-4 py-4 text-slate-600">
-                        {productLabels(lead.productsOfInterest) || "—"}
+                      <td className="px-4 py-4">
+                        <ProductTags ids={lead.productsOfInterest} />
                       </td>
                       <td className="px-4 py-4">
                         <StarRating
@@ -547,7 +582,7 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
                           defaultValue={lead.notes}
                           rows={3}
                           placeholder="Conversation notes…"
-                          className="w-56 resize-y rounded-2xl border border-sand-200 bg-sand/50 px-3 py-2 text-sm text-navy outline-none focus:border-navy"
+                          className="w-56 resize-y rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-500"
                           onChange={(event) => {
                             notesDrafts.current[lead.id] = event.target.value;
                           }}
@@ -564,6 +599,25 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function ProductTags({ ids }: { ids: readonly string[] }) {
+  if (ids.length === 0) {
+    return <span className="text-slate-400">—</span>;
+  }
+
+  return (
+    <div className="flex max-w-xs flex-wrap gap-1.5">
+      {ids.map((id) => (
+        <span
+          key={id}
+          className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800"
+        >
+          {getProductById(id)?.shortName ?? id}
+        </span>
+      ))}
     </div>
   );
 }
@@ -586,10 +640,14 @@ function StarRating({
             aria-label={`${rating} star${rating === 1 ? "" : "s"}`}
             aria-pressed={value === rating}
             onClick={() => onChange(rating)}
-            className="rounded-full p-0.5"
+            className="rounded-full p-0.5 hover:bg-emerald-50"
           >
             <Star
-              className={`size-5 ${active ? "fill-gold text-gold" : "text-sand-200"}`}
+              className={`size-5 transition ${
+                active
+                  ? "fill-emerald-500 text-emerald-500"
+                  : "text-slate-300 hover:text-emerald-400"
+              }`}
             />
           </button>
         );
