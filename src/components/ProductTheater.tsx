@@ -13,14 +13,14 @@ export function ProductTheater({
   dormant = false,
 }: ProductTheaterProps) {
   return (
-    <div className="product-studio relative mx-auto w-full max-w-2xl">
+    <div className="product-studio relative mx-auto w-full max-w-2xl xl:max-w-5xl 2xl:max-w-6xl">
       <div
         className="pointer-events-none absolute inset-x-8 bottom-14 h-16 rounded-[100%] bg-slate-900/[0.06] blur-3xl"
         aria-hidden="true"
       />
       <div
         id="stand-bags"
-        className={`relative grid grid-cols-3 items-end gap-1 sm:gap-3 ${
+        className={`relative grid grid-cols-3 items-end gap-1 sm:gap-3 xl:gap-8 ${
           dormant ? "invisible" : ""
         }`}
       >

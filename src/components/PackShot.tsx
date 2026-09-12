@@ -17,7 +17,8 @@ export function PackShot({
   index = 0,
   onSelect,
 }: PackShotProps) {
-  const imgMax = "max-h-[min(48vw,30vh)] sm:max-h-[320px] lg:max-h-[380px]";
+  const imgMax =
+    "max-h-[min(48vw,30vh)] sm:max-h-[320px] lg:max-h-[380px] xl:max-h-[min(52vh,540px)] 2xl:max-h-[min(58vh,640px)]";
   const mask = {
     WebkitMaskImage: `url(${sack.front})`,
     WebkitMaskSize: "contain",

@@ -34,15 +34,15 @@ export function ProductCatalog({
   return (
     <section
       id="products"
-      className="w-full bg-slate-50 px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-10 lg:px-8"
+      className="flex h-full min-h-0 w-full flex-col bg-slate-50"
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto flex w-full max-w-7xl shrink-0 flex-col gap-4 px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8 xl:max-w-[92rem] 2xl:max-w-[110rem]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-2xl">
+          <div className="max-w-2xl xl:max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
               Full lineup
             </p>
-            <h2 className="font-display mt-2 text-[1.85rem] leading-[1.08] tracking-tight text-slate-900 sm:text-4xl">
+            <h2 className="font-display mt-2 text-[1.85rem] leading-[1.08] tracking-tight text-slate-900 sm:text-4xl xl:text-5xl">
               Ten grades. One catalog.
             </h2>
             <p className="mt-2 text-[14px] leading-6 text-slate-600 sm:text-[15px]">
@@ -50,49 +50,51 @@ export function ProductCatalog({
               your details above.
             </p>
           </div>
-          <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:min-w-[16rem]">
+          <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:min-w-[18rem]">
             <button
               type="button"
               onClick={onDownloadCatalog}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 text-sm font-bold text-slate-900 sm:min-h-14"
+              className="btn-shine btn-sky inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-bold text-white sm:min-h-14"
             >
               <FileDown className="size-5 shrink-0" />
-              Download catalog
+              <span>Download catalog</span>
             </button>
             <button
               type="button"
               onClick={onRegister}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-bold text-white sm:min-h-14"
+              className="btn-shine btn-mika inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-bold text-white sm:min-h-14"
             >
               <UserRound className="size-5 shrink-0" />
-              {registered ? "You’re registered" : "Leave your details"}
+              <span>{registered ? "You’re registered" : "Leave your details"}</span>
             </button>
           </div>
         </div>
+      </div>
 
-        <div className="sticky top-0 z-20 -mx-4 mt-5 bg-slate-50/95 px-4 py-3 backdrop-blur-md sm:mx-0 sm:mt-8 sm:px-0">
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
-            {CATALOG_FILTERS.map((item) => {
-              const active = item.id === selectedCategory;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(item.id)}
-                  className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold tracking-wide transition ${
-                    active
-                      ? "bg-slate-900 text-white"
-                      : "bg-white text-slate-800 ring-1 ring-slate-200 hover:ring-slate-400"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
+      <div className="shrink-0 border-y border-slate-200/80 bg-slate-50/95 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto pb-0.5 sm:flex-wrap sm:overflow-visible xl:max-w-[92rem] 2xl:max-w-[110rem]">
+          {CATALOG_FILTERS.map((item) => {
+            const active = item.id === selectedCategory;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setSelectedCategory(item.id)}
+                className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold tracking-wide transition ${
+                  active
+                    ? "bg-slate-900 text-white"
+                    : "bg-white text-slate-800 ring-1 ring-slate-200 hover:ring-slate-400"
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        <div className="mt-4 grid gap-2.5 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 lg:px-8">
+        <div className="mx-auto mt-4 grid max-w-7xl gap-2.5 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4 2xl:max-w-[110rem]">
           {visibleProducts.map((product) => (
             <ProductCard
               key={product.id}
@@ -148,7 +150,7 @@ function ProductCard({
 
 function PackVisual({ product }: { product: Product }) {
   return (
-    <div className="relative flex h-28 w-[5.5rem] shrink-0 items-end justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-white sm:h-36 sm:w-full">
+    <div className="relative flex h-28 w-[5.5rem] shrink-0 items-end justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-white sm:h-36 sm:w-full xl:h-48 2xl:h-56">
       <div
         className="absolute inset-x-0 top-0 h-1.5"
         style={{ backgroundColor: product.accent }}
@@ -159,7 +161,7 @@ function PackVisual({ product }: { product: Product }) {
           alt=""
           width={180}
           height={220}
-          className="relative mb-1.5 h-24 w-auto object-contain drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)] sm:mb-2 sm:h-32"
+          className="relative mb-1.5 h-24 w-auto object-contain drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)] sm:mb-2 sm:h-32 xl:h-40 2xl:h-48"
         />
       ) : (
         <span

@@ -280,32 +280,39 @@ export function LeadCaptureModal({
   return (
     <div
       ref={shellRef}
-      className="lead-sheet lead-sheet-enter fixed inset-x-0 top-0 z-[80] flex h-[100dvh] flex-col bg-[#f4f1ea]"
+      className="lead-sheet lead-sheet-enter fixed inset-x-0 top-0 z-[80] flex h-[100dvh] flex-col bg-[linear-gradient(180deg,#eaf4fb_0%,#f4f1ea_42%,#eef7f1_100%)]"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
     >
-      <header className="relative shrink-0 border-b border-black/5 bg-white pt-[env(safe-area-inset-top)]">
-        <span className="absolute inset-x-0 top-0 h-1 bg-[#B22234]" aria-hidden />
-        <div className="mx-auto flex w-full max-w-lg items-start justify-between gap-4 px-5 pt-4 pb-3.5">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_at_top,rgba(30,120,200,0.28),transparent_68%)]"
+      />
+      <header className="relative shrink-0 overflow-hidden bg-sky pt-[env(safe-area-inset-top)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.22),transparent_55%)]"
+        />
+        <div className="relative mx-auto flex w-full max-w-lg items-start justify-between gap-4 px-5 pt-4 pb-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#B22234]">
-              BuildExpo follow-up
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/85">
+              MikaZone USA · BuildExpo
             </p>
             <h2
               id={titleId}
-              className="font-display mt-1 text-[1.65rem] leading-none tracking-tight text-navy"
+              className="font-display mt-1 text-[1.65rem] leading-none tracking-tight"
             >
               Leave your details
             </h2>
-            <p className="mt-1.5 text-[13px] leading-5 text-slate-500">
+            <p className="mt-1.5 text-[13px] leading-5 text-white/80">
               Four fields. Optional grades. We’ll quote after the show.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600"
+            className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-white/18 text-white ring-1 ring-white/30"
             aria-label="Close"
           >
             <X className="size-5" />
@@ -328,10 +335,10 @@ export function LeadCaptureModal({
         >
           <div className="mx-auto min-h-0 w-full max-w-lg flex-1 overflow-y-auto overscroll-contain px-4 py-5">
             <section>
-              <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky">
                 Your details
               </p>
-              <div className="overflow-hidden rounded-[22px] bg-white shadow-[0_1px_0_rgba(10,31,61,0.04)] ring-1 ring-black/5">
+              <div className="glass-panel overflow-hidden rounded-[24px] ring-1 ring-white/70">
                 <NativeField
                   label="Full name"
                   name="name"
@@ -388,12 +395,12 @@ export function LeadCaptureModal({
 
             <section className="mt-6">
               <div className="mb-2 flex items-end justify-between gap-3 px-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky">
                   Grades of interest
                 </p>
-                <p className="text-[11px] text-slate-400">Optional</p>
+                <p className="text-[11px] text-navy/35">Optional</p>
               </div>
-              <div className="space-y-4 rounded-[22px] bg-white px-3.5 py-3.5 shadow-[0_1px_0_rgba(10,31,61,0.04)] ring-1 ring-black/5">
+              <div className="glass-panel space-y-4 rounded-[24px] px-3.5 py-3.5 ring-1 ring-white/70">
                 {productGroups.map((group) => (
                   <div key={group.id}>
                     <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
@@ -421,16 +428,16 @@ export function LeadCaptureModal({
             ) : null}
           </div>
 
-          <div className="shrink-0 border-t border-black/5 bg-white px-4 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+          <div className="shrink-0 border-t border-white/40 bg-white/45 px-4 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
             <button
               type="submit"
               disabled={isPending}
-              className="mx-auto flex h-[52px] w-full max-w-lg items-center justify-center gap-2 rounded-2xl bg-navy text-[16px] font-semibold text-white shadow-[0_10px_24px_-16px_rgba(10,31,61,0.9)] disabled:opacity-60"
+              className="btn-shine btn-mika mx-auto flex h-[52px] w-full max-w-lg items-center justify-center gap-2 rounded-2xl text-[16px] font-semibold disabled:opacity-60"
             >
               {isPending ? (
                 <LoaderCircle className="size-5 animate-spin" />
               ) : null}
-              {isPending ? "Saving…" : "Send details"}
+              <span>{isPending ? "Saving…" : "Send details"}</span>
             </button>
           </div>
         </form>
@@ -453,7 +460,7 @@ function SuccessState({
       <div className="flex flex-1 flex-col items-center justify-center text-center">
         <span
           className={`flex size-16 items-center justify-center rounded-full ${
-            offline ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"
+            offline ? "bg-amber-50 text-amber-700" : "bg-mika/10 text-mika"
           }`}
         >
           {offline ? (
@@ -462,7 +469,7 @@ function SuccessState({
             <CheckCircle2 className="size-7" />
           )}
         </span>
-        <h3 className="font-display mt-5 text-3xl tracking-tight text-navy">
+        <h3 className="font-display mt-5 text-3xl tracking-tight text-usa">
           {offline ? "Saved on this phone" : "Details received"}
         </h3>
         <p className="mt-3 max-w-sm text-[15px] leading-6 text-slate-600">
@@ -473,9 +480,9 @@ function SuccessState({
         <button
           type="button"
           onClick={onClose}
-          className="flex h-[52px] w-full items-center justify-center rounded-2xl bg-navy text-[16px] font-semibold text-white"
+          className="btn-shine btn-mika flex h-[52px] w-full items-center justify-center rounded-2xl text-[16px] font-semibold"
         >
-          Done
+          <span>Done</span>
         </button>
       </div>
     </div>
@@ -496,10 +503,10 @@ function ProductChip({
       type="button"
       onClick={() => onToggle(product.id)}
       aria-pressed={selected}
-      className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-semibold transition ${
+      className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold backdrop-blur-md transition ${
         selected
-          ? "border-navy bg-navy text-white"
-          : "border-slate-200 bg-slate-50 text-slate-800"
+          ? "btn-shine btn-mika"
+          : "bg-white/45 text-navy ring-1 ring-white/70"
       }`}
     >
       {selected ? <Check className="size-3.5" /> : null}
@@ -547,10 +554,10 @@ function NativeField({
   return (
     <div
       data-field={fieldKey}
-      className={last ? "" : "border-b border-slate-100"}
+      className={last ? "" : "border-b border-navy/10"}
     >
-      <label htmlFor={inputId} className="block px-4 pt-3 pb-2">
-        <span className="block text-[12px] font-semibold text-slate-500">
+      <label htmlFor={inputId} className="block px-4 pt-3 pb-2 focus-within:bg-white/35">
+        <span className="block text-[12px] font-semibold text-sky">
           {label}
         </span>
         <input
