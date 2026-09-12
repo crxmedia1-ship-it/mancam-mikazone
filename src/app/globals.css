@@ -35,16 +35,130 @@
   animation: hero-fade-up 0.7s ease-out both;
 }
 
+@keyframes mesh-drift {
+  from {
+    background-position: 0 0, 0 0, 0 0;
+  }
+  to {
+    background-position: 56px 56px, 56px 56px, 28px 28px;
+  }
+}
+
 .hero-mesh {
   background-image:
     linear-gradient(to right, rgb(15 23 42 / 0.045) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(15 23 42 / 0.045) 1px, transparent 1px),
     linear-gradient(135deg, rgb(22 163 74 / 0.06) 1px, transparent 1px);
   background-size: 56px 56px, 56px 56px, 28px 28px;
+  animation: mesh-drift 28s linear infinite;
+}
+
+@keyframes sack-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.sack-idle {
+  animation: sack-idle 5s ease-in-out infinite;
+}
+
+@keyframes pack-sheen-move {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(130%);
+  }
+}
+
+.pack-sheen::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 36%,
+    rgb(255 255 255 / 0.55) 50%,
+    transparent 64%
+  );
+  mix-blend-mode: soft-light;
+  animation: pack-sheen-move 0.9s ease-out;
+}
+
+@keyframes intro-dust {
+  0% {
+    opacity: 0.85;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dust-x)), -72px) scale(0.35);
+  }
+}
+
+.intro-dust {
+  animation: intro-dust 0.7s ease-out forwards;
+}
+
+@keyframes intro-powder {
+  0% {
+    opacity: 0.95;
+    transform: translate(-50%, 0) scale(1);
+  }
+  55% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), var(--dy)) scale(0.2);
+  }
+}
+
+.intro-powder {
+  animation: intro-powder 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes coach-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgb(16 185 129 / 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgb(16 185 129 / 0.7));
+  }
+}
+
+.coach-pulse {
+  animation: coach-pulse 1.6s ease-in-out infinite;
+}
+
+.product-studio::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0 4% 8%;
+  background: radial-gradient(
+    ellipse at 50% 72%,
+    rgb(255 255 255 / 0.95) 0%,
+    rgb(248 250 252 / 0.35) 42%,
+    transparent 72%
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-fade {
+  .hero-fade,
+  .sack-idle,
+  .intro-dust,
+  .intro-powder,
+  .coach-pulse,
+  .hero-mesh,
+  .pack-sheen::after {
     animation: none;
   }
 }

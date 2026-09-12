@@ -3,11 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
-import { ChevronDown, FileDown, Lock, Phone } from "lucide-react";
+import { FileDown, Lock, Phone } from "lucide-react";
 import { Hero3DIntro } from "@/components/Hero3DIntro";
 import { LeadCaptureModal } from "@/components/LeadCaptureModal";
 import { ProductCatalog } from "@/components/ProductCatalog";
-import { type Product } from "@/data/products";
+import { ProductTheater } from "@/components/ProductTheater";
+import { StandGuide } from "@/components/StandGuide";
+import { getProductById, type Product } from "@/data/products";
 import {
   STAND_PHONE_DISPLAY,
   STAND_PHONE_SHORT,
@@ -22,6 +24,10 @@ export default function Home() {
   const [showIntro, setShowIntro] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [hasChosen, setHasChosen] = useState(false);
+  const [registered, setRegistered] = useState(false);
+
+  const guideStep: 1 | 2 | 3 = modalOpen ? 2 : registered ? 3 : 1;
 
   function openFullDossier() {
     setSelectedProductIds([]);
@@ -29,8 +35,14 @@ export default function Home() {
   }
 
   function openProductSpecs(product: Product) {
+    setHasChosen(true);
     setSelectedProductIds([product.id]);
     setModalOpen(true);
+  }
+
+  function openProductById(productId: string) {
+    const product = getProductById(productId);
+    if (product) openProductSpecs(product);
   }
 
   return (
@@ -43,7 +55,7 @@ export default function Home() {
           />
         ) : null}
       </AnimatePresence>
-      <section className="relative w-full overflow-hidden bg-white">
+      <section className="relative flex min-h-dvh w-full flex-col overflow-hidden bg-white pb-[calc(7.75rem+env(safe-area-inset-bottom))] sm:min-h-0 sm:pb-0">
         <div
           aria-hidden="true"
           className="hero-mesh pointer-events-none absolute inset-0 opacity-70"
@@ -53,31 +65,31 @@ export default function Home() {
           className="pointer-events-none absolute -right-24 top-12 size-72 rounded-full bg-mika/10 blur-3xl"
         />
 
-        <div className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4">
+        <div className="relative mx-auto max-w-3xl px-4 py-2 sm:px-6 sm:py-5 lg:max-w-5xl lg:px-8">
+          <div className="flex items-center justify-between gap-3">
             <Image
               src={MIKAZONE_LOGO}
               alt="MikaZone USA — Mancam Global Supply"
               width={320}
               height={107}
               priority
-              className="h-14 w-auto max-w-[min(70%,240px)] object-contain object-left sm:h-16 sm:max-w-[300px]"
+              className="h-10 w-auto max-w-[min(58%,180px)] object-contain object-left sm:h-14 sm:max-w-[240px]"
             />
             <div className="shrink-0 text-right">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-mika sm:text-[11px]">
+              <p className="hidden text-[10px] font-semibold uppercase tracking-[0.18em] text-mika sm:block sm:text-[11px]">
                 Official partner
               </p>
               <a
                 href={WHATSAPP_HREF}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 transition hover:text-mika"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 transition hover:text-mika"
               >
                 <Phone className="size-3" />
-                {STAND_PHONE_DISPLAY}
+                {STAND_PHONE_SHORT}
               </a>
               {eventPin ? (
-                <p className="mt-1 text-[11px] font-medium text-slate-400">
+                <p className="mt-0.5 text-[10px] font-medium text-slate-400 sm:text-[11px]">
                   Event {eventPin}
                 </p>
               ) : null}
@@ -85,83 +97,96 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative mx-auto flex min-h-[72vh] max-w-7xl flex-col justify-center px-4 pb-28 pt-10 sm:px-6 sm:pt-16 lg:px-8 lg:pb-32">
-          <p
-            className="hero-fade text-sm font-semibold uppercase tracking-[0.28em] text-mika"
-            style={{ animationDelay: "60ms" }}
-          >
+        <div className="sticky top-0 z-30 border-b border-emerald-100/80 bg-white/90 px-4 py-1.5 backdrop-blur-md sm:px-6 sm:py-2 lg:px-8">
+          <div className="mx-auto max-w-3xl lg:max-w-5xl">
+            <StandGuide step={guideStep} />
+          </div>
+        </div>
+
+        <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pb-2 pt-4 sm:px-6 sm:pt-10 lg:max-w-5xl lg:px-8">
+          <p className="text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-mika sm:text-sm">
             BuildExpo South Florida 2026
           </p>
-          <h1
-            className="hero-fade mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-6xl sm:leading-[1.05]"
-            style={{ animationDelay: "140ms" }}
-          >
-            High Performance{" "}
-            <span className="text-mika">Construction Additives</span>
+          <h1 className="mt-1.5 text-center text-[1.65rem] font-semibold leading-[1.12] tracking-tight text-slate-900 sm:text-5xl">
+            {registered ? (
+              <>
+                Specs unlocked.{" "}
+                <span className="text-mika">Browse or WhatsApp the booth.</span>
+              </>
+            ) : (
+              <>
+                Tap a bag.{" "}
+                <span className="text-mika">Unlock the specs.</span>
+              </>
+            )}
           </h1>
-          <p
-            className="hero-fade mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg"
-            style={{ animationDelay: "220ms" }}
-          >
-            Direct factory supply for dry-mix mortar plants, coatings
-            formulators, and concrete producers. Download full technical
-            dossiers, TDS, and volume pricing.
+          <p className="mx-auto mt-2 hidden max-w-md text-center text-sm leading-6 text-slate-600 sm:mt-3 sm:block sm:text-base">
+            {registered
+              ? "Your PDF is downloading. Need another grade? Tap a bag or browse the catalog."
+              : "Three grades on the table. One tap opens registration. PDF at the stand."}
           </p>
 
-          <div
-            className="hero-fade mt-10 flex flex-col gap-4"
-            style={{ animationDelay: "320ms" }}
-          >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <button
-                type="button"
-                onClick={openFullDossier}
-                className="inline-flex min-h-14 w-full items-center justify-center gap-3 bg-[#10B981] px-6 text-sm font-bold tracking-wide text-white shadow-lg shadow-emerald-500/30 transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-emerald-700/30 sm:min-h-16 sm:w-auto sm:min-w-[22rem] sm:px-8 sm:text-base"
-              >
-                <FileDown className="size-5 shrink-0 sm:size-6" />
-                DOWNLOAD TECHNICAL DOSSIER & PRICING
-              </button>
-              <a
-                href="#catalog"
-                className="inline-flex min-h-12 items-center justify-center px-2 text-sm font-semibold text-slate-500 underline-offset-4 hover:text-mika hover:underline"
-              >
-                Browse grades below
-              </a>
-            </div>
+          <div className="mt-3 flex flex-1 flex-col justify-end sm:mt-8 sm:justify-center">
+            <ProductTheater
+              onSelectProduct={openProductById}
+              coach={!hasChosen && !registered}
+            />
+          </div>
+
+          <div className="mt-8 hidden flex-col items-center gap-3 sm:flex">
+            <button
+              type="button"
+              onClick={openFullDossier}
+              className="inline-flex min-h-14 w-full max-w-md items-center justify-center gap-3 bg-[#10B981] px-6 text-sm font-bold tracking-wide text-white shadow-lg shadow-emerald-500/30 transition hover:-translate-y-0.5 hover:bg-emerald-700"
+            >
+              <FileDown className="size-5 shrink-0" />
+              {registered
+                ? "Download full dossier again"
+                : "Get the full 10-grade dossier"}
+            </button>
             <a
               href={WHATSAPP_HREF}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-slate-500 underline-offset-4 transition hover:text-mika hover:underline"
             >
-              Need instant factory pricing? Call or WhatsApp {STAND_PHONE_DISPLAY}
+              Instant factory pricing · WhatsApp {STAND_PHONE_DISPLAY}
             </a>
           </div>
         </div>
-
-        <a
-          href="#catalog"
-          className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-1 text-mika"
-          aria-label="Scroll to technical catalog"
-        >
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-            Catalog
-          </span>
-          <ChevronDown className="size-7 animate-bounce" />
-        </a>
       </section>
 
       <ProductCatalog onViewSpecs={openProductSpecs} />
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:hidden">
+        <button
+          type="button"
+          onClick={openFullDossier}
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#10B981] px-4 text-[13px] font-bold tracking-wide text-white"
+        >
+          <FileDown className="size-4 shrink-0" />
+          {registered ? "Full dossier PDF" : "Get dossier & pricing"}
+        </button>
+        <a
+          href={WHATSAPP_HREF}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-bold text-white"
+        >
+          <WhatsAppMark className="size-4 shrink-0" />
+          Chat booth · {STAND_PHONE_SHORT}
+        </a>
+      </div>
 
       <a
         href={WHATSAPP_HREF}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-4 z-40 inline-flex max-w-[min(calc(100vw-2rem),20rem)] items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-900/20 transition hover:bg-[#1ebe5d]"
+        className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-4 z-40 hidden max-w-[min(calc(100vw-2rem),20rem)] items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-900/20 transition hover:bg-[#1ebe5d] sm:inline-flex"
       >
         <WhatsAppMark className="size-5 shrink-0" />
         <span className="leading-tight">
-          💬 Chat Booth Rep ({STAND_PHONE_SHORT})
+          Chat Booth Rep ({STAND_PHONE_SHORT})
         </span>
       </a>
 
@@ -171,9 +196,10 @@ export default function Home() {
         initialProductIds={selectedProductIds}
         dossierMode={selectedProductIds.length === 0}
         onClose={() => setModalOpen(false)}
+        onRegistered={() => setRegistered(true)}
       />
 
-      <footer className="mt-auto w-full bg-slate-900">
+      <footer className="mt-auto w-full bg-slate-900 pb-[calc(8.5rem+env(safe-area-inset-bottom))] sm:pb-0">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <p className="text-xs text-white/35">
             Mancam Global Supply · Official MikaZone USA partner

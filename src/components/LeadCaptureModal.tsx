@@ -50,6 +50,7 @@ import {
   type LeadInput,
 } from "@/lib/lead";
 import { downloadProductDatasheets } from "@/lib/datasheet-pdf";
+import confetti from "canvas-confetti";
 
 const PENDING_LEADS_KEY = "mancam-mikazone:pending-leads";
 
@@ -83,6 +84,7 @@ type LeadCaptureModalProps = {
   initialProductIds?: readonly string[];
   dossierMode?: boolean;
   onClose: () => void;
+  onRegistered?: () => void;
 };
 
 type FormState = {
@@ -144,6 +146,7 @@ export function LeadCaptureModal({
   initialProductIds = [],
   dossierMode = false,
   onClose,
+  onRegistered,
 }: LeadCaptureModalProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -280,6 +283,14 @@ export function LeadCaptureModal({
         downloadProductDatasheets(productsForPdf);
         setStatusTone("success");
         setStatusMessage("Datasheet downloading. Our team will follow up.");
+        onRegistered?.();
+        confetti({
+          particleCount: 64,
+          spread: 58,
+          origin: { y: 0.42 },
+          colors: ["#10B981", "#4DB8C9", "#E07A45", "#C4A35A"],
+          scalar: 0.75,
+        });
         return;
       }
 
@@ -296,6 +307,7 @@ export function LeadCaptureModal({
       setStatusMessage(
         "No connection right now. Your request was saved on this device and the PDF is downloading.",
       );
+      onRegistered?.();
     });
   }
 
@@ -320,7 +332,7 @@ export function LeadCaptureModal({
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">
-              BuildExpo South Florida 2026
+              Step 2 of 3 · Register
             </p>
             <h2 id={titleId} className="mt-1 text-xl font-semibold text-slate-900">
               {dossierMode ? "Unlock the full technical dossier" : "Register to download specs"}
@@ -344,7 +356,7 @@ export function LeadCaptureModal({
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
             <div className="grid gap-6 lg:grid-cols-2">
-              <div>
+              <div className="order-2 lg:order-1">
                 {dossierMode && selectedProducts.length === 0 ? (
                   <DossierSnapshot />
                 ) : selectedProducts.length > 0 ? (
@@ -369,7 +381,8 @@ export function LeadCaptureModal({
                 </fieldset>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="order-1 space-y-5 lg:order-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                 <LabeledInput
                   label="Full name"
                   icon={<UserRound className="size-4" />}
@@ -426,10 +439,9 @@ export function LeadCaptureModal({
                     ))}
                   </LabeledSelect>
                 </div>
-              </div>
-            </div>
+                </div>
 
-            <fieldset className="mt-6">
+                <fieldset>
               <legend className="text-sm font-semibold text-slate-900">Role</legend>
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {PROFILE_OPTIONS.map((option) => {
@@ -462,7 +474,7 @@ export function LeadCaptureModal({
               <FieldError message={firstError(fieldErrors, "profileType")} />
             </fieldset>
 
-            <fieldset className="mt-5">
+            <fieldset>
               <legend className="text-sm font-semibold text-slate-900">Volume</legend>
               <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-5">
                 {VOLUME_OPTIONS.map((option) => {
@@ -490,6 +502,8 @@ export function LeadCaptureModal({
               </div>
               <FieldError message={firstError(fieldErrors, "purchaseVolume")} />
             </fieldset>
+              </div>
+            </div>
 
             {statusMessage ? (
               <p
@@ -509,7 +523,7 @@ export function LeadCaptureModal({
             ) : null}
           </div>
 
-          <div className="border-t border-slate-200 bg-white px-5 py-4 sm:px-6">
+          <div className="border-t border-slate-200 bg-white px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
             {statusTone === "success" || statusTone === "offline" ? (
               <a
                 href={WHATSAPP_HREF}

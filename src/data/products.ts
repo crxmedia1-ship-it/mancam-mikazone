@@ -86,6 +86,8 @@ export type Product = {
   accent: string;
   starProduct?: boolean;
   badge?: string;
+  packFront?: string;
+  packSide?: string;
 };
 
 export const PRODUCTS: readonly Product[] = [
@@ -136,9 +138,11 @@ export const PRODUCTS: readonly Product[] = [
       notes: "Keep sealed, dry, and cool. Shelf life 24 months in original packaging.",
     },
     recommendedDosage: "0.20 – 0.50% of dry mix (up to 0.60% in gypsum plasters)",
-    accent: "#10B981",
+    accent: "#4DB8C9",
     starProduct: true,
     badge: "⭐ STAR PRODUCT / EXPO SPECIAL",
+    packFront: "/products/hpmc-front.png",
+    packSide: "/products/hpmc-side.png",
   },
   {
     id: "vae-rpp",
@@ -188,9 +192,10 @@ export const PRODUCTS: readonly Product[] = [
       notes: "Protect from humidity and stacking compression. Shelf life 12 months.",
     },
     recommendedDosage: "1 – 5% of dry mix (3 – 8% in flexible C2TES1 / S2 adhesives)",
-    accent: "#1A6FB5",
+    accent: "#2BA090",
     starProduct: true,
     badge: "⭐ STAR PRODUCT / EXPO SPECIAL",
+    packFront: "/products/rdp-front.png",
   },
   {
     id: "hec",
@@ -236,7 +241,9 @@ export const PRODUCTS: readonly Product[] = [
       notes: "Hygroscopic. Store below 30 °C, RH < 60%. Shelf life 24 months.",
     },
     recommendedDosage: "0.20 – 0.60% of total paint formulation (0.3 – 1.0% in high-build coatings)",
-    accent: "#0E8A6A",
+    accent: "#E07A45",
+    packFront: "/products/hec-front.png",
+    packSide: "/products/hec-side.png",
   },
   {
     id: "starch-ether-hps",
