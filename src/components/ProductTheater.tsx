@@ -24,10 +24,12 @@ export function ProductTheater({
           dormant ? "invisible" : ""
         }`}
       >
-        {SACK_LINEUP.map((sack) => (
+        {SACK_LINEUP.map((sack, index) => (
           <PackShot
             key={sack.productId}
             sack={sack}
+            index={index}
+            alive={!dormant}
             onSelect={() => onSelectProduct(sack.productId)}
           />
         ))}

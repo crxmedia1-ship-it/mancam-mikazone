@@ -235,18 +235,21 @@ export function LeadCaptureModal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="sheet-enter relative z-10 flex max-h-[86dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.45)] sm:max-h-[88vh] sm:rounded-[28px]"
+        className="sheet-enter relative z-10 flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.45)] sm:max-h-[88vh] sm:rounded-[28px]"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+        <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-mika">
-              Stand registration
+              30 seconds at the stand
             </p>
-            <h2 id={titleId} className="mt-1 text-xl font-semibold tracking-tight text-slate-900">
-              Register for follow-up
+            <h2
+              id={titleId}
+              className="font-display mt-1 text-[1.7rem] leading-tight tracking-tight text-slate-900"
+            >
+              Leave your details
             </h2>
-            <p className="mt-1 text-sm leading-5 text-slate-600">
-              Name, company, phone, email, and grades. We quote after the show.
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              We quote after BuildExpo. The catalog stays free.
             </p>
           </div>
           <button
@@ -261,7 +264,7 @@ export function LeadCaptureModal({
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-            <div className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <LabeledInput
                 label="Full name"
                 icon={<UserRound className="size-4" />}
@@ -300,9 +303,9 @@ export function LeadCaptureModal({
               />
             </div>
 
-            <fieldset className="mt-6">
+            <fieldset className="mt-7">
               <legend className="text-sm font-semibold text-slate-900">
-                Products of interest
+                Grades of interest
               </legend>
               <p className="mt-1 text-xs text-slate-500">
                 Tap every grade you want quoted or sampled.
@@ -364,7 +367,7 @@ function ProductChips({
   onToggle: (productId: string) => void;
 }) {
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="mt-3 grid grid-cols-2 gap-2">
       {PRODUCTS.map((product: Product) => {
         const selected = selectedIds.includes(product.id);
         return (
@@ -373,7 +376,7 @@ function ProductChips({
             type="button"
             onClick={() => onToggle(product.id)}
             aria-pressed={selected}
-            className={`rounded-full border px-3 py-2 text-left text-sm transition ${
+            className={`min-h-11 rounded-2xl border px-3 py-2.5 text-left text-[13px] font-semibold transition ${
               selected
                 ? "border-slate-900 bg-slate-900 text-white"
                 : "border-slate-200 bg-slate-50 text-slate-900"
@@ -417,9 +420,9 @@ function LabeledInput({
   const inputId = useId();
 
   return (
-    <label htmlFor={inputId} className="block text-sm font-medium text-slate-900">
+    <label htmlFor={inputId} className="block text-[13px] font-semibold text-slate-900">
       {label}
-      <span className="mt-1.5 flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 focus-within:border-slate-900">
+      <span className="mt-1.5 flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3.5 focus-within:border-slate-900 focus-within:bg-white">
         <span className="text-slate-400">{icon}</span>
         <input
           id={inputId}
@@ -428,7 +431,7 @@ function LabeledInput({
           autoComplete={autoComplete}
           inputMode={inputMode}
           onChange={(event) => onChange(event.target.value)}
-          className="h-12 w-full bg-transparent text-sm text-slate-900 outline-none"
+          className="h-13 min-h-12 w-full bg-transparent text-[15px] text-slate-900 outline-none"
         />
       </span>
       <FieldError message={error} />

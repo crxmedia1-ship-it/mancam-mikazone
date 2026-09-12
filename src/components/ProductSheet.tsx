@@ -94,7 +94,7 @@ export function ProductSheet({
                 </p>
                 <h2
                   id={titleId}
-                  className="mt-1.5 text-[1.35rem] font-semibold tracking-tight text-slate-900"
+                  className="font-display mt-1.5 text-[1.65rem] leading-tight tracking-tight text-slate-900"
                 >
                   {product.shortName}
                 </h2>

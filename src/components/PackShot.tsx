@@ -5,12 +5,16 @@ import type { SackShowcase } from "@/data/sacks";
 type PackShotProps = {
   sack: SackShowcase;
   dimmed?: boolean;
+  alive?: boolean;
+  index?: number;
   onSelect?: () => void;
 };
 
 export function PackShot({
   sack,
   dimmed = false,
+  alive = false,
+  index = 0,
   onSelect,
 }: PackShotProps) {
   const imgMax = "max-h-[min(48vw,30vh)] sm:max-h-[320px] lg:max-h-[380px]";
@@ -18,17 +22,24 @@ export function PackShot({
   const body = (
     <>
       <span
-        className="pointer-events-none absolute bottom-[8%] left-1/2 h-6 w-[70%] -translate-x-1/2 rounded-[100%] bg-slate-900/20 blur-2xl"
-        style={{ opacity: dimmed ? 0.08 : 0.22 }}
+        className={`sack-aura pointer-events-none absolute bottom-[7%] left-1/2 h-7 w-[78%] rounded-[100%] blur-2xl`}
+        style={{
+          background: sack.accent,
+          animationDelay: `${index * 0.45}s`,
+          animationPlayState: dimmed ? "paused" : "running",
+        }}
         aria-hidden="true"
       />
-      <span className="relative mx-auto block w-fit">
+      <span
+        className={`relative mx-auto block w-fit ${alive && !dimmed ? "sack-idle" : ""}`}
+        style={{ animationDelay: `${index * 0.45}s` }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={sack.front}
           alt=""
           draggable={false}
-          className={`relative mx-auto h-auto w-full select-none object-contain drop-shadow-[0_18px_24px_rgba(15,23,42,0.16)] ${imgMax}`}
+          className={`relative mx-auto h-auto w-full select-none object-contain drop-shadow-[0_22px_28px_rgba(15,23,42,0.18)] ${imgMax}`}
         />
       </span>
     </>

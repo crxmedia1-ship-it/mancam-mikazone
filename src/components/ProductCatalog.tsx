@@ -25,14 +25,14 @@ export function ProductCatalog({ onViewSpecs }: ProductCatalogProps) {
   return (
     <section
       id="products"
-      className="w-full bg-slate-50 px-4 py-12 pb-8 sm:px-6 lg:px-8 lg:py-16"
+      className="w-full bg-slate-50 px-4 py-12 pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-16 lg:px-8 lg:py-16"
     >
       <div className="mx-auto max-w-7xl">
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
             Full lineup
           </p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+          <h2 className="font-display mt-2 text-[2.1rem] leading-[1.08] tracking-tight text-slate-900 sm:text-5xl">
             Ten grades. One catalog.
           </h2>
           <p className="mt-3 text-[15px] leading-6 text-slate-600">

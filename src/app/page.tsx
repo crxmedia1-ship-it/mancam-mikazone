@@ -19,7 +19,6 @@ import {
   STAND_PHONE_DISPLAY,
   STAND_TEL_HREF,
 } from "@/lib/contact";
-import { SACK_LINEUP } from "@/data/sacks";
 
 const MIKAZONE_LOGO =
   "https://res.cloudinary.com/dgphys1xd/image/upload/v1788991971/PHOTO-2026-09-07-18-40-08_zw0udk.jpg";
@@ -65,7 +64,7 @@ export default function Home() {
           />
         ) : null}
       </AnimatePresence>
-      <section className="relative flex min-h-dvh w-full flex-col overflow-hidden bg-white pb-[calc(5.75rem+env(safe-area-inset-bottom))] sm:min-h-0 sm:pb-0">
+      <section className="relative flex min-h-dvh w-full flex-col overflow-hidden bg-white pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:min-h-0 sm:pb-0">
         <div
           aria-hidden="true"
           className="hero-mesh pointer-events-none absolute inset-0 opacity-70"
@@ -89,15 +88,15 @@ export default function Home() {
         </div>
 
         <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pb-2 pt-3 sm:px-6 sm:pt-10 lg:max-w-5xl lg:px-8">
-          <p className="text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-mika sm:text-xs">
+          <p className="text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-mika sm:text-xs">
             BuildExpo South Florida · Sep 30 – Oct 1
           </p>
-          <h1 className="mt-2 text-center text-[1.55rem] font-semibold leading-[1.12] tracking-tight text-slate-900 sm:text-5xl">
-            Cellulose ethers for U.S. plants.
+          <h1 className="font-display mt-2 text-center text-[2.35rem] leading-[1.02] tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
+            Tap a bag.
           </h1>
-          <p className="mx-auto mt-2 max-w-md text-center text-[13px] leading-5 text-slate-600 sm:mt-3 sm:text-base sm:leading-6">
-            {COMPANY_NAME} is the official {PARTNER_NAME} partner.
-            Tap a bag for the grade — the catalog is free.
+          <p className="mx-auto mt-3 max-w-md text-center text-[14px] leading-6 text-slate-600 sm:mt-4 sm:text-lg">
+            See the grade. {COMPANY_NAME} — official {PARTNER_NAME} partner.
+            Catalog is free.
           </p>
 
           <div className="mt-4 flex flex-1 flex-col justify-end sm:mt-10 sm:justify-center">
@@ -134,13 +133,13 @@ export default function Home() {
 
       <section
         id="register"
-        className="bg-white px-4 py-12 sm:px-6 lg:px-8 lg:py-16"
+        className="bg-white px-4 py-12 pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-16 lg:px-8 lg:py-16"
       >
         <div className="mx-auto max-w-xl rounded-[28px] border border-slate-200 bg-slate-50 px-5 py-8 text-center sm:px-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
             After the show
           </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+          <h2 className="font-display mt-2 text-[1.85rem] tracking-tight text-slate-900">
             Want a quote or samples?
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -159,15 +158,18 @@ export default function Home() {
       </section>
 
       <div
-        className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/96 px-4 pt-2.5 pb-[max(0.7rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:hidden ${
-          overlayOpen ? "hidden" : ""
+        className={`fixed inset-x-3 z-40 sm:hidden ${
+          overlayOpen ? "pointer-events-none hidden" : ""
         }`}
+        style={{
+          bottom: "max(0.75rem, env(safe-area-inset-bottom))",
+        }}
       >
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 rounded-[22px] border border-slate-200/90 bg-white/92 p-2 shadow-[0_12px_40px_-16px_rgba(15,23,42,0.45)] backdrop-blur-md">
           <button
             type="button"
             onClick={downloadBrochure}
-            className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border border-slate-300 bg-white px-3 text-[13px] font-bold text-slate-900"
+            className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 text-[13px] font-bold text-slate-900"
           >
             <FileDown className="size-4 shrink-0" />
             Catalog
@@ -198,7 +200,7 @@ export default function Home() {
         onRegistered={() => setRegistered(true)}
       />
 
-      <footer className="mt-auto w-full bg-slate-900 pb-[calc(5.75rem+env(safe-area-inset-bottom))] sm:pb-0">
+      <footer className="mt-auto w-full bg-slate-900 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:pb-0">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <p className="text-xs text-white/35">
             {COMPANY_NAME} · Official {PARTNER_NAME} partner
@@ -211,67 +213,58 @@ export default function Home() {
 
 function AboutSection() {
   return (
-    <section id="about" className="bg-sand px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
-            Who we are
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-            {COMPANY_NAME}
-          </h2>
-          <p className="mt-4 text-[15px] leading-7 text-slate-600 sm:text-base">
-            Official {PARTNER_NAME} partner. We bring MikaZone cellulose ethers,
-            redispersible powders, and construction additives to U.S. dry-mix
-            plants, coatings formulators, and concrete producers — factory-direct,
-            with technical support at this stand.
-          </p>
-          <dl className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="border-t border-slate-300/80 pt-4">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                At BuildExpo
-              </dt>
-              <dd className="mt-1.5 text-sm font-semibold text-slate-900">
-                South Florida · Sep 30 – Oct 1
-              </dd>
-            </div>
-            <div className="border-t border-slate-300/80 pt-4">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                Stand line
-              </dt>
-              <dd className="mt-1.5">
-                <a
-                  href={STAND_TEL_HREF}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900"
-                >
-                  <Phone className="size-3.5 text-mika" />
-                  {STAND_PHONE_DISPLAY}
-                </a>
-              </dd>
-            </div>
-          </dl>
+    <section
+      id="about"
+      className="bg-sand px-4 py-16 pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-16 lg:px-8 lg:py-24"
+    >
+      <div className="mx-auto max-w-5xl">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-mika">
+          Who we are
+        </p>
+        <h2 className="font-display mt-3 max-w-xl text-[2.15rem] leading-[1.08] tracking-tight text-slate-900 sm:text-5xl">
+          The official MikaZone partner in the United States.
+        </h2>
+        <p className="mt-5 max-w-2xl text-[16px] leading-8 text-slate-600 sm:text-lg sm:leading-8">
+          {COMPANY_NAME} supplies cellulose ethers, redispersible powders, and
+          construction additives — factory-direct — to dry-mix plants, coatings
+          formulators, and concrete producers. Technical support is at this
+          stand.
+        </p>
+
+        <div className="mt-10 overflow-hidden rounded-[28px] bg-white shadow-[0_30px_60px_-36px_rgba(15,23,42,0.28)]">
+          <Image
+            src="/about/mikazone-applications.png"
+            alt="MikaZone HPMC, MHEC, HEC, and modified cellulose applications"
+            width={1200}
+            height={780}
+            className="h-auto w-full object-contain"
+          />
         </div>
 
-        <div className="relative">
-          <div
-            className="pointer-events-none absolute inset-x-8 bottom-6 h-16 rounded-[100%] bg-slate-900/10 blur-3xl"
-            aria-hidden="true"
-          />
-          <div className="relative grid grid-cols-3 items-end gap-2 rounded-[28px] bg-white px-4 py-8 shadow-[0_30px_60px_-36px_rgba(15,23,42,0.35)] sm:px-8">
-            {SACK_LINEUP.map((sack) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={sack.productId}
-                src={sack.front}
-                alt={sack.shortName}
-                className="mx-auto h-auto max-h-44 w-full object-contain drop-shadow-[0_16px_20px_rgba(15,23,42,0.14)] sm:max-h-56"
-              />
-            ))}
+        <dl className="mt-10 grid gap-8 sm:grid-cols-2">
+          <div>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              At BuildExpo
+            </dt>
+            <dd className="mt-2 text-base font-medium text-slate-900">
+              South Florida · Sep 30 – Oct 1
+            </dd>
           </div>
-          <p className="mt-4 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-            HPMC · HEC · RDP
-          </p>
-        </div>
+          <div>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              Stand line
+            </dt>
+            <dd className="mt-2">
+              <a
+                href={STAND_TEL_HREF}
+                className="inline-flex items-center gap-2 text-base font-medium text-slate-900"
+              >
+                <Phone className="size-4 text-mika" />
+                {STAND_PHONE_DISPLAY}
+              </a>
+            </dd>
+          </div>
+        </dl>
       </div>
     </section>
   );

@@ -68,6 +68,40 @@
   animation: sheet-up 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.font-display {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+@keyframes sack-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.sack-idle {
+  animation: sack-idle 4.6s ease-in-out infinite;
+}
+
+@keyframes sack-aura {
+  0%,
+  100% {
+    opacity: 0.32;
+    transform: translateX(-50%) scaleX(0.92);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-50%) scaleX(1.08);
+  }
+}
+
+.sack-aura {
+  animation: sack-aura 3.8s ease-in-out infinite;
+}
+
 .product-studio::before {
   content: "";
   pointer-events: none;
@@ -84,7 +118,9 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-fade,
   .hero-mesh,
-  .sheet-enter {
+  .sheet-enter,
+  .sack-idle,
+  .sack-aura {
     animation: none;
   }
 }

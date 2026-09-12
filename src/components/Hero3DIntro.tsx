@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import { PackShot } from "@/components/PackShot";
 import { SACK_IMAGE_SRC, SACK_LINEUP } from "@/data/sacks";
 
-const INTRO_MS = 4300;
+const INTRO_MS = 4800;
 const STAMP_MS = 1480;
-const SETTLE_MS = 2550;
+const SETTLE_MS = 2600;
 const LOGO_SRC =
   "https://res.cloudinary.com/dgphys1xd/image/upload/v1788992084/Photoroom_20260909_181404_r3umw2.png";
 
@@ -154,7 +154,12 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
             left: slot.left,
             width: slot.width,
           }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          transition={{
+            type: "spring",
+            stiffness: settling ? 92 : 400,
+            damping: settling ? 18 : 40,
+            mass: settling ? 1.15 : 1,
+          }}
         >
           <div className="relative grid grid-cols-3 items-end gap-1 sm:gap-3">
             {SACK_LINEUP.map((sack, index) => (
@@ -164,12 +169,17 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
                 initial={{ y: "-70vh", opacity: 0 }}
                 animate={ready ? { y: 0, opacity: 1 } : { y: "-70vh", opacity: 0 }}
                 transition={{
-                  delay: 0.1 + index * 0.1,
-                  duration: 0.85,
-                  ease: [0.22, 1, 0.36, 1],
+                  y: {
+                    delay: 0.08 + index * 0.11,
+                    type: "spring",
+                    stiffness: 180,
+                    damping: 16,
+                    mass: 1.45,
+                  },
+                  opacity: { duration: 0.2, delay: 0.08 + index * 0.11 },
                 }}
               >
-                <PackShot sack={sack} />
+                <PackShot sack={sack} index={index} />
               </motion.div>
             ))}
           </div>
