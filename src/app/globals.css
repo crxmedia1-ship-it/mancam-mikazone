@@ -254,6 +254,13 @@
   );
 }
 
+@media (max-width: 767px) {
+  .usa-flag-wash::before {
+    display: none;
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-fade,
   .hero-mesh,

@@ -34,9 +34,9 @@ export function ProductCatalog({
   return (
     <section
       id="products"
-      className="flex h-full min-h-0 w-full flex-col bg-slate-50"
+      className="w-full bg-slate-50 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
     >
-      <div className="mx-auto flex w-full max-w-7xl shrink-0 flex-col gap-4 px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8 xl:max-w-[92rem] 2xl:max-w-[110rem]">
+      <div className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8 xl:max-w-[92rem] 2xl:max-w-[110rem]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl xl:max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
@@ -69,10 +69,8 @@ export function ProductCatalog({
             </button>
           </div>
         </div>
-      </div>
 
-      <div className="shrink-0 border-y border-slate-200/80 bg-slate-50/95 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto pb-0.5 sm:flex-wrap sm:overflow-visible xl:max-w-[92rem] 2xl:max-w-[110rem]">
+        <div className="mt-5 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
           {CATALOG_FILTERS.map((item) => {
             const active = item.id === selectedCategory;
             return (
@@ -91,10 +89,8 @@ export function ProductCatalog({
             );
           })}
         </div>
-      </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 lg:px-8">
-        <div className="mx-auto mt-4 grid max-w-7xl gap-2.5 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4 2xl:max-w-[110rem]">
+        <div className="mt-4 grid gap-2.5 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
           {visibleProducts.map((product) => (
             <ProductCard
               key={product.id}

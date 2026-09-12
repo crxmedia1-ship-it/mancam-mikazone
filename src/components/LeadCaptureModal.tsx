@@ -11,19 +11,13 @@ import {
   type HTMLAttributes,
 } from "react";
 import {
-  Check,
   CheckCircle2,
   LoaderCircle,
   WifiOff,
   X,
 } from "lucide-react";
 import { submitLead } from "@/app/actions/leads";
-import {
-  PRODUCTS,
-  PRODUCT_CATEGORIES,
-  PRODUCT_CATEGORY_IDS,
-  type Product,
-} from "@/data/products";
+import { PRODUCTS, type Product } from "@/data/products";
 import { leadSchema, type LeadInput } from "@/lib/lead";
 
 const PENDING_LEADS_KEY = "mancam-mikazone:pending-leads";
@@ -52,12 +46,6 @@ const emptyForm: FormState = {
   phone: "",
   productsOfInterest: [],
 };
-
-const productGroups = PRODUCT_CATEGORY_IDS.map((id) => ({
-  id,
-  label: PRODUCT_CATEGORIES[id].label,
-  products: PRODUCTS.filter((product) => product.category === id),
-})).filter((group) => group.products.length > 0);
 
 function readPendingLeads(): PendingLead[] {
   if (typeof window === "undefined") return [];
@@ -400,24 +388,17 @@ export function LeadCaptureModal({
                 </p>
                 <p className="text-[11px] text-navy/35">Optional</p>
               </div>
-              <div className="glass-panel space-y-4 rounded-[24px] px-3.5 py-3.5 ring-1 ring-white/70">
-                {productGroups.map((group) => (
-                  <div key={group.id}>
-                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                      {group.label}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {group.products.map((product) => (
-                        <ProductChip
-                          key={product.id}
-                          product={product}
-                          selected={form.productsOfInterest.includes(product.id)}
-                          onToggle={toggleProduct}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              <div className="glass-panel rounded-[24px] p-3 ring-1 ring-white/70">
+                <div className="grid grid-cols-2 gap-2">
+                  {PRODUCTS.map((product) => (
+                    <ProductChip
+                      key={product.id}
+                      product={product}
+                      selected={form.productsOfInterest.includes(product.id)}
+                      onToggle={toggleProduct}
+                    />
+                  ))}
+                </div>
               </div>
             </section>
 
@@ -503,13 +484,12 @@ function ProductChip({
       type="button"
       onClick={() => onToggle(product.id)}
       aria-pressed={selected}
-      className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold backdrop-blur-md transition ${
+      className={`flex min-h-12 w-full items-center justify-center rounded-2xl px-2 text-center text-[12px] font-semibold leading-tight transition ${
         selected
           ? "btn-shine btn-mika"
-          : "bg-white/45 text-navy ring-1 ring-white/70"
+          : "bg-white/70 text-navy ring-1 ring-navy/10"
       }`}
     >
-      {selected ? <Check className="size-3.5" /> : null}
       {product.shortName}
     </button>
   );
