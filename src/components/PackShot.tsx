@@ -10,6 +10,7 @@ type PackShotProps = {
   alive?: boolean;
   dimmed?: boolean;
   coach?: boolean;
+  opened?: boolean;
   size?: "hero" | "intro";
   index?: number;
   onSelect?: () => void;
@@ -23,6 +24,7 @@ export function PackShot({
   alive = true,
   dimmed = false,
   coach = false,
+  opened = false,
   size = "hero",
   index = 0,
   onSelect,
@@ -32,8 +34,8 @@ export function PackShot({
   const intro = size === "intro";
   const showSide = Boolean(interactive && hover && sack.side);
   const imgMax = intro
-    ? "max-h-[22vh] sm:max-h-[26vh]"
-    : "max-h-[min(52vw,36vh)] sm:max-h-[320px] lg:max-h-[380px]";
+    ? "max-h-[26vh] sm:max-h-[28vh]"
+    : "max-h-[min(48vw,30vh)] sm:max-h-[320px] lg:max-h-[380px]";
 
   const body = (
     <>
@@ -55,26 +57,27 @@ export function PackShot({
               coach && !hover ? "coach-pulse" : ""
             }`}
           >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={sack.front}
-            alt=""
-            draggable={false}
-            className={`relative mx-auto h-auto w-full select-none object-contain drop-shadow-[0_24px_28px_rgba(15,23,42,0.18)] transition-all duration-300 ${imgMax} ${
-              showSide ? "opacity-0" : "opacity-100"
-            } ${hover && interactive ? "-translate-y-2" : ""}`}
-          />
-          {sack.side ? (
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={sack.side}
+              src={sack.front}
               alt=""
               draggable={false}
-              className={`pointer-events-none absolute inset-0 m-auto h-auto w-auto select-none object-contain drop-shadow-[0_24px_28px_rgba(15,23,42,0.18)] transition-opacity duration-300 ${imgMax} ${
-                showSide ? "opacity-100" : "opacity-0"
-              }`}
+              className={`relative mx-auto h-auto w-full select-none object-contain drop-shadow-[0_24px_28px_rgba(15,23,42,0.18)] transition-all duration-300 ${imgMax} ${
+                showSide ? "opacity-0" : "opacity-100"
+              } ${hover && interactive ? "-translate-y-2" : ""}`}
             />
-          ) : null}
+            {sack.side ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={sack.side}
+                alt=""
+                draggable={false}
+                className={`pointer-events-none absolute inset-0 m-auto h-auto w-auto select-none object-contain drop-shadow-[0_24px_28px_rgba(15,23,42,0.18)] transition-opacity duration-300 ${imgMax} ${
+                  showSide ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            ) : null}
+            {opened ? <span className="sack-open-mouth" aria-hidden="true" /> : null}
           </span>
         </span>
       </span>
@@ -106,13 +109,6 @@ export function PackShot({
     >
       {body}
       <span className="relative z-10 mt-2 flex flex-col items-center">
-        {sack.featured ? (
-          <span className="mb-1 rounded-sm bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-emerald-800">
-            Star
-          </span>
-        ) : (
-          <span className="mb-1 h-[18px]" />
-        )}
         <span className="text-[11px] font-bold tracking-wide text-slate-800 sm:text-xs">
           {sack.shortName}
         </span>

@@ -7,19 +7,23 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type ReactNode,
 } from "react";
 import Image from "next/image";
 import {
   Download,
+  Eye,
+  FileSpreadsheet,
   LoaderCircle,
   Lock,
+  QrCode,
   RefreshCw,
   Star,
   Users,
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { getProductById } from "@/data/products";
+import { PRODUCTS, getProductById } from "@/data/products";
 import {
   PRIMARY_APPLICATION_LABELS,
   PROFILE_TYPE_LABELS,
@@ -27,6 +31,13 @@ import {
   normalizeLead,
   type LeadRecord,
 } from "@/lib/lead";
+import {
+  emptyStandStats,
+  normalizeStandEvent,
+  summarizeStandEvents,
+  type StandEventRecord,
+  type StandStats,
+} from "@/lib/events";
 import { createSupabaseClient } from "@/lib/supabase";
 
 const ADMIN_UNLOCK_KEY = "mancam-mikazone:admin-unlocked";
@@ -250,6 +261,8 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
 function LeadsDashboard({ onLock }: { onLock: () => void }) {
   const supabase = useMemo(() => createSupabaseClient(), []);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
+  const [stats, setStats] = useState<StandStats>(emptyStandStats);
+  const [analyticsReady, setAnalyticsReady] = useState(true);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -258,13 +271,17 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
   const [statusTone, setStatusTone] = useState<"ok" | "error">("ok");
   const notesDrafts = useRef<Record<string, string>>({});
 
+  const applyEvents = useCallback((rows: StandEventRecord[]) => {
+    setStats(summarizeStandEvents(rows));
+  }, []);
+
   const loadLeads = useCallback(
     async (mode: "initial" | "manual" = "initial") => {
       if (mode === "manual") setRefreshing(true);
-      const { data, error } = await supabase
-        .from("leads")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const [{ data, error }, eventsResult] = await Promise.all([
+        supabase.from("leads").select("*").order("created_at", { ascending: false }),
+        supabase.from("stand_events").select("*").order("created_at", { ascending: false }),
+      ]);
 
       if (error) {
         setStatusTone("error");
@@ -280,10 +297,22 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
         }
       }
 
+      if (eventsResult.error) {
+        setAnalyticsReady(false);
+        applyEvents([]);
+      } else {
+        setAnalyticsReady(true);
+        applyEvents(
+          (eventsResult.data ?? [])
+            .map((row) => normalizeStandEvent(row as Record<string, unknown>))
+            .filter((row): row is StandEventRecord => row !== null),
+        );
+      }
+
       setLoading(false);
       setRefreshing(false);
     },
-    [supabase],
+    [applyEvents, supabase],
   );
 
   useEffect(() => {
@@ -307,6 +336,24 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
         }
 
         setLoading(false);
+      });
+
+    void supabase
+      .from("stand_events")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          setAnalyticsReady(false);
+          return;
+        }
+        setAnalyticsReady(true);
+        applyEvents(
+          (data ?? [])
+            .map((row) => normalizeStandEvent(row as Record<string, unknown>))
+            .filter((row): row is StandEventRecord => row !== null),
+        );
       });
 
     const channel = supabase
@@ -348,7 +395,7 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
       cancelled = true;
       void supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, [applyEvents, supabase]);
 
   async function updateRating(leadId: string, rating: number) {
     const nextRating = leads.find((lead) => lead.id === leadId)?.rating === rating ? null : rating;
@@ -390,7 +437,7 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
     setExporting(true);
     try {
       const XLSX = await import("xlsx");
-      const rows = leads.map((lead) => ({
+      const leadRows = leads.map((lead) => ({
         Name: lead.fullName,
         Company: lead.companyName,
         Email: lead.email,
@@ -405,15 +452,48 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
         Source: lead.source ?? "",
       }));
 
-      const worksheet = XLSX.utils.json_to_sheet(rows);
-      worksheet["!cols"] = Object.keys(rows[0] ?? { Name: "" }).map(() => ({
+      const summaryRows = [
+        { Metric: "QR / link visits", Value: stats.visits },
+        { Metric: "Unique phones / sessions", Value: stats.uniqueSessions },
+        { Metric: "Registrations", Value: leads.length },
+        { Metric: "Brochure downloads", Value: stats.brochureDownloads },
+        { Metric: "Register form opens", Value: stats.registerOpens },
+      ];
+
+      const productRows =
+        stats.productViews.length > 0
+          ? stats.productViews.map((item, index) => ({
+              Rank: index + 1,
+              Product: getProductById(item.productId)?.shortName ?? item.productId,
+              SpecTaps: item.count,
+            }))
+          : PRODUCTS.map((product) => ({
+              Rank: "",
+              Product: product.shortName,
+              SpecTaps: 0,
+            }));
+
+      const workbook = XLSX.utils.book_new();
+      const leadsSheet = XLSX.utils.json_to_sheet(
+        leadRows.length > 0 ? leadRows : [{ Name: "" }],
+      );
+      leadsSheet["!cols"] = Object.keys(leadRows[0] ?? { Name: "" }).map(() => ({
         wch: 24,
       }));
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Leads");
-      XLSX.writeFile(workbook, `Mancam-MikaZone-leads-${fileStamp()}.xlsx`);
+      XLSX.utils.book_append_sheet(workbook, leadsSheet, "Leads");
+      XLSX.utils.book_append_sheet(
+        workbook,
+        XLSX.utils.json_to_sheet(summaryRows),
+        "Traffic",
+      );
+      XLSX.utils.book_append_sheet(
+        workbook,
+        XLSX.utils.json_to_sheet(productRows),
+        "Product taps",
+      );
+      XLSX.writeFile(workbook, `Mancam-MikaZone-stand-${fileStamp()}.xlsx`);
       setStatusTone("ok");
-      setStatus(`Exported ${leads.length} row${leads.length === 1 ? "" : "s"} to Excel.`);
+      setStatus("Exported leads, traffic, and product taps to Excel.");
     } catch (error) {
       setStatusTone("error");
       setStatus(
@@ -471,15 +551,15 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
             <button
               type="button"
               onClick={() => void exportExcel()}
-              disabled={exporting || leads.length === 0}
-              className="inline-flex h-11 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
+              disabled={exporting}
+              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60 sm:flex-none"
             >
               {exporting ? (
                 <LoaderCircle className="size-4 animate-spin" />
               ) : (
-                <Download className="size-4" />
+                <FileSpreadsheet className="size-4" />
               )}
-              Exportar a Excel (.xlsx)
+              Export Excel
             </button>
             <button
               type="button"
@@ -506,6 +586,80 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
           </p>
         ) : null}
 
+        {!analyticsReady ? (
+          <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Traffic tracking is not live yet. Run{" "}
+            <code className="font-mono text-xs">supabase/stand_events.sql</code> in
+            the Supabase SQL editor, then refresh.
+          </p>
+        ) : null}
+
+        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard
+            icon={<QrCode className="size-4" />}
+            label="QR / link visits"
+            value={stats.visits}
+          />
+          <StatCard
+            icon={<Users className="size-4" />}
+            label="Unique sessions"
+            value={stats.uniqueSessions}
+          />
+          <StatCard
+            icon={<Download className="size-4" />}
+            label="Registrations"
+            value={leads.length}
+          />
+          <StatCard
+            icon={<Eye className="size-4" />}
+            label="Brochure downloads"
+            value={stats.brochureDownloads}
+          />
+        </div>
+
+        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="border-b border-slate-100 px-4 py-3">
+            <h2 className="text-sm font-semibold text-slate-900">
+              Products tapped for specs
+            </h2>
+          </div>
+          {stats.productViews.length === 0 ? (
+            <p className="px-4 py-6 text-sm text-slate-500">
+              No spec taps yet. Numbers appear as visitors open grades.
+            </p>
+          ) : (
+            <ol className="divide-y divide-slate-100">
+              {stats.productViews.slice(0, 8).map((item, index) => {
+                const max = stats.productViews[0]?.count || 1;
+                return (
+                  <li
+                    key={item.productId}
+                    className="flex items-center gap-3 px-4 py-3"
+                  >
+                    <span className="w-5 text-xs font-bold text-slate-400">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-slate-900">
+                        {getProductById(item.productId)?.shortName ?? item.productId}
+                      </p>
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          className="h-full rounded-full bg-emerald-500"
+                          style={{ width: `${Math.round((item.count / max) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="tabular-nums text-sm font-bold text-slate-900">
+                      {item.count}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </div>
+
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-20 text-slate-500">
@@ -520,7 +674,21 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              <div className="space-y-3 p-3 lg:hidden">
+                {leads.map((lead) => (
+                  <LeadMobileCard
+                    key={lead.id}
+                    lead={lead}
+                    onRate={(rating) => void updateRating(lead.id, rating)}
+                    onSaveNotes={(notes) => void saveNotes(lead.id, notes)}
+                    onDraftNotes={(notes) => {
+                      notesDrafts.current[lead.id] = notes;
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="hidden overflow-x-auto lg:block">
               <table className="min-w-[980px] w-full text-left text-sm">
                 <thead className="bg-slate-100 text-xs font-bold uppercase tracking-wide text-slate-700">
                   <tr>
@@ -595,11 +763,78 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
                   ))}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </>
           )}
         </div>
       </main>
     </div>
+  );
+}
+
+function StatCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
+        <span className="text-emerald-600">{icon}</span>
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-900">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function LeadMobileCard({
+  lead,
+  onRate,
+  onSaveNotes,
+  onDraftNotes,
+}: {
+  lead: LeadRecord;
+  onRate: (rating: number) => void;
+  onSaveNotes: (notes: string) => void;
+  onDraftNotes: (notes: string) => void;
+}) {
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-semibold text-slate-900">{lead.fullName}</p>
+          <p className="text-sm text-slate-600">{lead.companyName}</p>
+        </div>
+        <p className="text-[11px] text-slate-400">{formatCapturedAt(lead.createdAt)}</p>
+      </div>
+      <a href={`mailto:${lead.email}`} className="mt-2 block text-sm text-emerald-700">
+        {lead.email}
+      </a>
+      <a href={`tel:${lead.phone}`} className="block text-sm text-emerald-700">
+        {lead.phone}
+      </a>
+      <div className="mt-3">
+        <ProductTags ids={lead.productsOfInterest} />
+      </div>
+      <div className="mt-3">
+        <StarRating value={lead.rating} onChange={onRate} />
+      </div>
+      <textarea
+        defaultValue={lead.notes}
+        rows={2}
+        placeholder="Conversation notes…"
+        className="mt-3 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-500"
+        onChange={(event) => onDraftNotes(event.target.value)}
+        onBlur={(event) => onSaveNotes(event.target.value.trim())}
+      />
+    </article>
   );
 }
 

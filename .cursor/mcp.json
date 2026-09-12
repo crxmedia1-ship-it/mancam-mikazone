@@ -1,12 +1,7 @@
 {
   "mcpServers": {
     "supabase": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-postgres",
-        "postgresql://postgres.rbctsleplxtqypqngvvn:[Dwrv8SY89wbnQhmQ]@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
-      ]
+      "url": "https://mcp.supabase.com/mcp?project_ref=hzwwhutthihjdgwfovbv&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"
     }
   }
 }

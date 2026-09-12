@@ -77,21 +77,15 @@ export const leadSchema = z.object({
   phone: z
     .string()
     .trim()
-    .min(7, "Enter a phone or WhatsApp number")
+    .min(7, "Enter a phone number")
     .max(40)
     .regex(/^[+\d][\d\s().-]{6,}$/u, "Enter a valid phone number"),
-  profileType: z.enum(PROFILE_TYPES, {
-    error: "Select your profile",
-  }),
   productsOfInterest: z
     .array(z.enum(productIds))
     .min(1, "Select at least one product"),
-  purchaseVolume: z.enum(PURCHASE_VOLUMES, {
-    error: "Select an estimated volume",
-  }),
-  primaryApplication: z.enum(PRIMARY_APPLICATIONS, {
-    error: "Select a primary application",
-  }),
+  profileType: z.enum(PROFILE_TYPES).default("other"),
+  purchaseVolume: z.enum(PURCHASE_VOLUMES).default("sample"),
+  primaryApplication: z.enum(PRIMARY_APPLICATIONS).default("other"),
 });
 
 export type LeadInput = z.infer<typeof leadSchema>;

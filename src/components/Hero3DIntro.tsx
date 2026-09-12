@@ -1,43 +1,63 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { PackShot } from "@/components/PackShot";
 import { SACK_IMAGE_SRC, SACK_LINEUP, SACK_REST_ROTATE } from "@/data/sacks";
 
-const INTRO_MS = 4800;
-const POUR_MS = 1080;
-const BRAND_MS = 1480;
-const FADE_MS = 3800;
+const INTRO_MS = 9200;
+const OPEN_MS = 1100;
+const POUR_MS = 1450;
+const BRAND_MS = 3200;
+const SETTLE_MS = 6200;
+const FADE_MS = 8000;
 const LOGO_SRC =
   "https://res.cloudinary.com/dgphys1xd/image/upload/v1788992084/Photoroom_20260909_181404_r3umw2.png";
 
-const POWDER = [
-  { left: "18%", color: "#4DB8C9", dx: "12vw", dy: "-42vh", delay: "0ms", size: 7 },
-  { left: "18%", color: "#7DD3E0", dx: "-6vw", dy: "-36vh", delay: "40ms", size: 5 },
-  { left: "20%", color: "#4DB8C9", dx: "4vw", dy: "-48vh", delay: "80ms", size: 8 },
-  { left: "22%", color: "#A7E8F0", dx: "18vw", dy: "-32vh", delay: "120ms", size: 4 },
-  { left: "50%", color: "#E07A45", dx: "0vw", dy: "-46vh", delay: "30ms", size: 8 },
-  { left: "50%", color: "#F0A070", dx: "-10vw", dy: "-38vh", delay: "70ms", size: 5 },
-  { left: "48%", color: "#E07A45", dx: "8vw", dy: "-50vh", delay: "110ms", size: 6 },
-  { left: "52%", color: "#FFD0B0", dx: "14vw", dy: "-34vh", delay: "150ms", size: 4 },
-  { left: "82%", color: "#2BA090", dx: "-12vw", dy: "-44vh", delay: "20ms", size: 7 },
-  { left: "80%", color: "#5DC8B8", dx: "6vw", dy: "-36vh", delay: "60ms", size: 5 },
-  { left: "78%", color: "#2BA090", dx: "-4vw", dy: "-50vh", delay: "100ms", size: 8 },
-  { left: "84%", color: "#A8E8DC", dx: "-18vw", dy: "-30vh", delay: "140ms", size: 4 },
-  { left: "50%", color: "#10B981", dx: "2vw", dy: "-52vh", delay: "90ms", size: 6 },
-  { left: "35%", color: "#4DB8C9", dx: "8vw", dy: "-40vh", delay: "160ms", size: 5 },
-  { left: "65%", color: "#2BA090", dx: "-8vw", dy: "-40vh", delay: "180ms", size: 5 },
+const MOUTHS = [
+  { left: 17, hex: "#2E9BB0", cloud: "rgba(46,155,176,0.82)" },
+  { left: 50, hex: "#D45A20", cloud: "rgba(212,90,32,0.8)" },
+  { left: 83, hex: "#178A78", cloud: "rgba(23,138,120,0.82)" },
+] as const;
+
+function buildPowder() {
+  return MOUTHS.flatMap((mouth, bag) =>
+    Array.from({ length: 14 }, (_, i) => ({
+      left: `${mouth.left + ((i % 3) - 1) * 2.2}%`,
+      color: mouth.hex,
+      dx: `${((i % 7) - 3) * 4.2}vw`,
+      dy: `${22 + (i % 6) * 7}vh`,
+      delay: `${bag * 60 + i * 80}ms`,
+      size: 22 + (i % 5) * 8,
+      soft: i % 2 === 0,
+    })),
+  );
+}
+
+const PLUMES = [
+  { left: "17%", color: "linear-gradient(180deg, #2E9BB0 0%, rgba(46,155,176,0) 100%)", delay: "0ms" },
+  { left: "50%", color: "linear-gradient(180deg, #D45A20 0%, rgba(212,90,32,0) 100%)", delay: "60ms" },
+  { left: "83%", color: "linear-gradient(180deg, #178A78 0%, rgba(23,138,120,0) 100%)", delay: "30ms" },
+] as const;
+
+const CLOUDS = [
+  { left: "17%", color: "rgba(46,155,176,0.88)", delay: "0ms", size: 280 },
+  { left: "32%", color: "rgba(46,155,176,0.5)", delay: "140ms", size: 210 },
+  { left: "50%", color: "rgba(212,90,32,0.88)", delay: "50ms", size: 300 },
+  { left: "64%", color: "rgba(212,90,32,0.48)", delay: "180ms", size: 220 },
+  { left: "83%", color: "rgba(23,138,120,0.88)", delay: "90ms", size: 280 },
+  { left: "70%", color: "rgba(23,138,120,0.48)", delay: "220ms", size: 210 },
 ] as const;
 
 export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
   const completedRef = useRef(false);
+  const powder = useMemo(buildPowder, []);
   const [ready, setReady] = useState(false);
-  const [showBrand, setShowBrand] = useState(false);
+  const [opened, setOpened] = useState(false);
   const [pouring, setPouring] = useState(false);
-  const [shaking, setShaking] = useState(false);
+  const [showBrand, setShowBrand] = useState(false);
+  const [settled, setSettled] = useState(false);
   const [fading, setFading] = useState(false);
-  const [impacted, setImpacted] = useState(false);
 
   function finish() {
     if (completedRef.current) return;
@@ -70,7 +90,7 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
 
     const fallback = window.setTimeout(() => {
       if (!cancelled) setReady(true);
-    }, 250);
+    }, 280);
 
     return () => {
       cancelled = true;
@@ -84,20 +104,18 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    const impactTimer = window.setTimeout(() => {
-      setImpacted(true);
-      setShaking(true);
-      window.setTimeout(() => setShaking(false), 240);
-    }, POUR_MS);
-    const pourTimer = window.setTimeout(() => setPouring(true), POUR_MS + 80);
+    const openTimer = window.setTimeout(() => setOpened(true), OPEN_MS);
+    const pourTimer = window.setTimeout(() => setPouring(true), POUR_MS);
     const brandTimer = window.setTimeout(() => setShowBrand(true), BRAND_MS);
+    const settleTimer = window.setTimeout(() => setSettled(true), SETTLE_MS);
     const fadeTimer = window.setTimeout(() => setFading(true), FADE_MS);
     const doneTimer = window.setTimeout(finish, INTRO_MS);
 
     return () => {
-      window.clearTimeout(impactTimer);
+      window.clearTimeout(openTimer);
       window.clearTimeout(pourTimer);
       window.clearTimeout(brandTimer);
+      window.clearTimeout(settleTimer);
       window.clearTimeout(fadeTimer);
       window.clearTimeout(doneTimer);
       document.body.style.overflow = previousOverflow;
@@ -107,23 +125,11 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-white"
-      initial={{ opacity: 1, x: 0, y: 0 }}
-      animate={
-        fading
-          ? { opacity: 0, x: 0, y: 0 }
-          : shaking
-            ? { opacity: 1, x: [0, -4, 3, -2, 0], y: [0, 2, -1, 0] }
-            : { opacity: 1, x: 0, y: 0 }
-      }
+      className="fixed inset-0 z-50 overflow-hidden bg-white"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: fading ? 0 : 1 }}
       exit={{ opacity: 0 }}
-      transition={
-        fading
-          ? { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
-          : shaking
-            ? { duration: 0.24, ease: "easeOut" }
-            : { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
-      }
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       role="dialog"
       aria-label="MikaZone introduction"
     >
@@ -131,103 +137,86 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 38%, rgba(16,185,129,0.12), transparent 52%)",
+            "radial-gradient(ellipse at 50% 48%, rgba(16,185,129,0.14), transparent 58%)",
         }}
       />
 
-      <div className="relative z-20 flex min-h-0 flex-1 flex-col items-center justify-center px-6">
-        <motion.div
-          className="flex flex-col items-center text-center"
-          initial={{ opacity: 0.4, scale: 0.86, filter: "blur(8px)" }}
-          animate={{
-            opacity: fading ? 0 : 1,
-            scale: showBrand ? 1 : 0.9,
-            filter: showBrand ? "blur(0px)" : "blur(5px)",
-          }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div
-            style={{
-              filter: showBrand
-                ? "drop-shadow(0 0 32px rgba(16,185,129,0.55)) drop-shadow(0 0 80px rgba(16,185,129,0.28))"
-                : "drop-shadow(0 0 12px rgba(16,185,129,0.2))",
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={LOGO_SRC}
-              alt="MikaZone"
-              className="h-28 w-auto max-w-[min(88vw,460px)] object-contain sm:h-36"
-            />
-          </div>
-          <p
-            className={`mt-4 max-w-sm text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 transition-opacity duration-500 sm:mt-5 sm:text-xs ${
-              showBrand ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            Official USA partner · BuildExpo 2026
-          </p>
-        </motion.div>
-      </div>
-
-      <div className="relative z-10 mx-auto w-full max-w-lg px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:max-w-2xl sm:pb-10">
-        <div
-          className="pointer-events-none absolute inset-x-8 bottom-6 h-16 rounded-[100%] bg-slate-900/12 blur-3xl"
-          aria-hidden="true"
-        />
-        <div
-          className={`grid grid-cols-3 items-end gap-2 transition-opacity duration-700 sm:gap-6 ${
-            showBrand ? "opacity-55" : "opacity-100"
-          }`}
-        >
+      <motion.div
+        className="absolute inset-x-0 top-[5%] z-20 px-3 sm:px-8"
+        initial={{ y: 28, opacity: 0 }}
+        animate={
+          ready
+            ? {
+                y: settled ? "52dvh" : 0,
+                scale: settled ? 1.16 : 1,
+                opacity: 1,
+              }
+            : { y: 28, opacity: 0 }
+        }
+        transition={
+          settled
+            ? { type: "spring", stiffness: 108, damping: 16, mass: 1.3 }
+            : { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
+        }
+      >
+        <div className="relative mx-auto grid max-w-lg grid-cols-3 items-end gap-2 sm:max-w-2xl sm:gap-6">
           {SACK_LINEUP.map((sack, index) => (
             <motion.div
               key={sack.productId}
               className="origin-bottom"
-              initial={{ y: "-70vh", opacity: 0 }}
               animate={
-                ready
-                  ? {
-                      y: 0,
-                      opacity: fading ? 0 : 1,
-                      scaleY: impacted ? [0.92, 1.04, 1] : 1,
-                    }
-                  : { y: "-70vh", opacity: 0 }
+                settled
+                  ? { scaleY: [0.92, 1.05, 1], rotate: SACK_REST_ROTATE[index] }
+                  : opened
+                    ? { scaleY: [1, 1.04, 0.98, 1], rotate: 0 }
+                    : { rotate: 0, scaleY: 1 }
               }
-              transition={{
-                y: {
-                  type: "spring",
-                  stiffness: 180,
-                  damping: 17,
-                  mass: 1.2,
-                  delay: ready ? 0.06 + index * 0.12 : 0,
-                },
-                opacity: { duration: 0.3, delay: ready ? 0.06 + index * 0.12 : 0 },
-                scaleY: { duration: 0.32, ease: "easeOut" },
-              }}
+              transition={{ duration: settled ? 0.5 : 0.45, ease: "easeOut" }}
             >
               <PackShot
                 sack={sack}
-                restRotate={SACK_REST_ROTATE[index]}
+                restRotate={0}
                 interactive={false}
                 alive={false}
+                opened={opened && !settled}
                 size="intro"
                 index={index}
               />
             </motion.div>
           ))}
         </div>
+      </motion.div>
+
+      <div className="pointer-events-none absolute inset-0 z-30">
+        {pouring
+          ? PLUMES.map((plume, i) => (
+              <span
+                key={`plume-${i}`}
+                className="intro-plume absolute top-[26%] w-16 rounded-full sm:w-20"
+                style={{
+                  left: plume.left,
+                  height: "34vh",
+                  background: plume.color,
+                  filter: "blur(10px)",
+                  animationDelay: plume.delay,
+                }}
+              />
+            ))
+          : null}
 
         {pouring
-          ? POWDER.map((speck, i) => (
+          ? powder.map((speck, i) => (
               <span
                 key={i}
-                className="intro-powder pointer-events-none absolute bottom-[28%] rounded-full"
+                className={`intro-powder-fall absolute top-[27%] rounded-full ${
+                  speck.soft ? "is-soft" : ""
+                }`}
                 style={{
                   left: speck.left,
                   width: speck.size,
-                  height: speck.size,
+                  height: speck.size * 0.86,
                   background: speck.color,
+                  boxShadow: `0 0 22px ${speck.color}`,
                   ["--dx" as string]: speck.dx,
                   ["--dy" as string]: speck.dy,
                   animationDelay: speck.delay,
@@ -235,12 +224,57 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
               />
             ))
           : null}
+
+        {pouring
+          ? CLOUDS.map((cloud, i) => (
+              <span
+                key={`cloud-${i}`}
+                className="intro-cloud absolute top-[29%] rounded-full blur-xl"
+                style={{
+                  left: cloud.left,
+                  width: cloud.size,
+                  height: cloud.size * 0.82,
+                  background: cloud.color,
+                  animationDelay: cloud.delay,
+                }}
+              />
+            ))
+          : null}
+
+        <motion.div
+          className="absolute inset-x-0 top-[40%] z-20 flex flex-col items-center px-6 text-center sm:top-[42%]"
+          initial={{ opacity: 0, scale: 0.46, y: 40, filter: "blur(18px)" }}
+          animate={{
+            opacity: showBrand ? (settled || fading ? 0 : 1) : 0,
+            scale: showBrand ? (settled ? 0.78 : 1) : 0.46,
+            y: showBrand ? (settled ? -24 : 0) : 40,
+            filter: showBrand ? "blur(0px)" : "blur(18px)",
+          }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div
+            style={{
+              filter:
+                "drop-shadow(0 0 28px rgba(16,185,129,0.55)) drop-shadow(0 0 70px rgba(16,185,129,0.25))",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={LOGO_SRC}
+              alt="MikaZone"
+              className="h-[4.75rem] w-auto max-w-[min(78vw,380px)] object-contain sm:h-32"
+            />
+          </div>
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 sm:mt-3 sm:text-xs">
+            Official USA partner · BuildExpo 2026
+          </p>
+        </motion.div>
       </div>
 
       <button
         type="button"
         onClick={finish}
-        className="absolute right-4 top-4 z-50 min-h-11 rounded-full border border-slate-300 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 backdrop-blur-md hover:text-slate-800"
+        className="absolute right-3 top-[max(0.6rem,env(safe-area-inset-top))] z-50 min-h-11 rounded-full border border-slate-300 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 backdrop-blur-md sm:right-4"
       >
         Skip ✕
       </button>

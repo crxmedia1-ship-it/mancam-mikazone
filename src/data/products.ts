@@ -84,8 +84,6 @@ export type Product = {
   packaging: ProductPackaging;
   recommendedDosage: string;
   accent: string;
-  starProduct?: boolean;
-  badge?: string;
   packFront?: string;
   packSide?: string;
 };
@@ -101,7 +99,7 @@ export const PRODUCTS: readonly Product[] = [
     chemicalName:
       "Hydroxypropyl Methylcellulose (HPMC) — Grade MK 200P, high water retention and open time",
     summary:
-      "Star cellulose ether for dry-mix mortar plants: high water retention, extended open time, and controlled slip. Grade MK 200P is the BuildExpo duo with VAE RPP 3510 for C2 tile adhesives, putties, and EIFS.",
+      "High water retention and open time for dry-mix mortars. Pair with VAE RPP 3510 for C2 adhesives, putties, and EIFS.",
     category: "mortars",
     applications: [
       "C2 tile adhesives and large-format thin-set",
@@ -139,8 +137,6 @@ export const PRODUCTS: readonly Product[] = [
     },
     recommendedDosage: "0.20 – 0.50% of dry mix (up to 0.60% in gypsum plasters)",
     accent: "#4DB8C9",
-    starProduct: true,
-    badge: "⭐ STAR PRODUCT / EXPO SPECIAL",
     packFront: "/products/hpmc-front.png",
     packSide: "/products/hpmc-side.png",
   },
@@ -154,7 +150,7 @@ export const PRODUCTS: readonly Product[] = [
     chemicalName:
       "Vinyl acetate–ethylene copolymer redispersible polymer powder — Grade 3510, premium flexibility and adhesion",
     summary:
-      "Star RPP for flexible C2 adhesives and EIFS. Grade 3510 redisperses to a tough VAE film for adhesion, crack bridging, and freeze–thaw durability — the BuildExpo pair with HPMC MK 200P.",
+      "Redispersible VAE for flexible C2 adhesives and EIFS. Grade 3510 builds adhesion, crack bridging, and freeze–thaw durability — the pair with HPMC MK 200P.",
     category: "mortars",
     applications: [
       "Flexible and deformable tile adhesives (C2TES1 / S2)",
@@ -193,8 +189,6 @@ export const PRODUCTS: readonly Product[] = [
     },
     recommendedDosage: "1 – 5% of dry mix (3 – 8% in flexible C2TES1 / S2 adhesives)",
     accent: "#2BA090",
-    starProduct: true,
-    badge: "⭐ STAR PRODUCT / EXPO SPECIAL",
     packFront: "/products/rdp-front.png",
   },
   {
@@ -577,7 +571,7 @@ export const PRODUCTS: readonly Product[] = [
 
 export type ProductId = (typeof PRODUCTS)[number]["id"];
 
-export const STAR_PRODUCT_IDS = ["hpmc-mhec", "vae-rpp"] as const;
+export const FEATURED_PRODUCT_IDS = ["hpmc-mhec", "vae-rpp"] as const;
 
 export function getProductById(id: string): Product | undefined {
   return PRODUCTS.find((product) => product.id === id);

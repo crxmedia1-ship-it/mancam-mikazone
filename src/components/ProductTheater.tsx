@@ -55,8 +55,8 @@ export function ProductTheater({
           />
         ))}
       </div>
-      <p className="mt-3 text-center text-sm font-semibold text-slate-600">
-        {coach ? "① Tap any bag to start" : "Tap another bag for more specs"}
+      <p className="mt-2 text-center text-[12px] font-semibold text-slate-600 sm:mt-3 sm:text-sm">
+        HPMC · HEC · RDP — tap for specs
       </p>
     </div>
   );

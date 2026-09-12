@@ -4,7 +4,6 @@ export type SackShowcase = {
   chemical: string;
   front: string;
   side?: string;
-  featured: boolean;
   accent: string;
   introRotate: number;
 };
@@ -16,7 +15,6 @@ export const SACK_SHOWCASE: readonly SackShowcase[] = [
     chemical: "Hydroxypropyl Methyl Cellulose",
     front: "/products/hpmc-front.png",
     side: "/products/hpmc-side.png",
-    featured: true,
     accent: "#4DB8C9",
     introRotate: -4,
   },
@@ -25,7 +23,6 @@ export const SACK_SHOWCASE: readonly SackShowcase[] = [
     shortName: "RDP 3510",
     chemical: "Redispersible Polymer Powder",
     front: "/products/rdp-front.png",
-    featured: true,
     accent: "#2BA090",
     introRotate: 4,
   },
@@ -35,7 +32,6 @@ export const SACK_SHOWCASE: readonly SackShowcase[] = [
     chemical: "Hydroxyethyl Cellulose",
     front: "/products/hec-front.png",
     side: "/products/hec-side.png",
-    featured: false,
     accent: "#E07A45",
     introRotate: 0,
   },

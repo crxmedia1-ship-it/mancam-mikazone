@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
 import {
   CATALOG_FILTERS,
   PRODUCT_CATEGORIES,
@@ -19,32 +18,29 @@ export function ProductCatalog({ onViewSpecs }: ProductCatalogProps) {
   const [selectedCategory, setSelectedCategory] = useState<CatalogFilterId>("all");
 
   const visibleProducts = useMemo(() => {
-    if (selectedCategory === "all") {
-      return PRODUCTS;
-    }
-
+    if (selectedCategory === "all") return PRODUCTS;
     return PRODUCTS.filter((product) => product.category === selectedCategory);
   }, [selectedCategory]);
 
   return (
     <section
-      id="catalog"
+      id="products"
       className="w-full bg-slate-50 px-4 py-12 pb-8 sm:px-6 lg:px-8 lg:py-16"
     >
       <div className="mx-auto max-w-7xl">
         <div className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
-            Step 1, continued
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
+            Full lineup
           </p>
           <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-            Need another grade? Browse all 10.
+            Ten grades. One brochure.
           </h2>
-          <p className="mt-3 text-base leading-7 text-slate-600">
-            Filter, tap View Specs, register once, and the PDF unlocks.
+          <p className="mt-3 text-[15px] leading-6 text-slate-600">
+            Open a card for specs and a datasheet. No login.
           </p>
         </div>
 
-        <div className="sticky top-[4.75rem] z-20 -mx-4 mt-8 bg-slate-50/95 px-4 py-3 backdrop-blur-md sm:top-0 sm:mx-0 sm:px-0">
+        <div className="sticky top-0 z-20 -mx-4 mt-8 bg-slate-50/95 px-4 py-3 backdrop-blur-md sm:mx-0 sm:px-0">
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
             {CATALOG_FILTERS.map((item) => {
               const active = item.id === selectedCategory;
@@ -53,7 +49,7 @@ export function ProductCatalog({ onViewSpecs }: ProductCatalogProps) {
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedCategory(item.id)}
-                  className={`shrink-0 rounded-sm px-4 py-2.5 text-sm font-semibold tracking-wide transition ${
+                  className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold tracking-wide transition ${
                     active
                       ? "bg-slate-900 text-white"
                       : "bg-white text-slate-800 ring-1 ring-slate-200 hover:ring-slate-400"
@@ -88,19 +84,51 @@ function ProductCard({
   onViewSpecs: () => void;
 }) {
   return (
-    <article className="group flex h-full flex-col border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-[0_18px_40px_-24px_rgba(15,23,42,0.35)]">
+    <button
+      type="button"
+      onClick={onViewSpecs}
+      className="group flex h-full flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white text-left shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] transition hover:border-slate-300 hover:shadow-[0_18px_40px_-22px_rgba(15,23,42,0.4)]"
+    >
+      <PackVisual product={product} />
+      <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            {PRODUCT_CATEGORIES[product.category].label}
+          </span>
+          <span className="font-mono text-[11px] text-slate-400">{product.sku}</span>
+        </div>
+        <h3 className="mt-2 text-[1.15rem] font-semibold leading-6 tracking-tight text-slate-900">
+          {product.shortName}
+        </h3>
+        <p className="mt-1 line-clamp-1 text-[13px] text-slate-500">
+          {product.chemicalName}
+        </p>
+        <p className="mt-3 line-clamp-2 text-[14px] leading-6 text-slate-600">
+          {product.summary}
+        </p>
+        <span className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl border-2 border-slate-900 bg-white px-4 text-sm font-bold text-slate-900 group-hover:bg-slate-900 group-hover:text-white">
+          Open specs
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function PackVisual({ product }: { product: Product }) {
+  return (
+    <div className="relative flex h-36 items-end justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">
+      <div
+        className="absolute inset-x-0 top-0 h-1.5"
+        style={{ backgroundColor: product.accent }}
+      />
       {product.packFront ? (
-        <div className="relative flex h-44 items-end justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">
-          <div
-            className="absolute inset-x-0 top-0 h-1.5"
-            style={{ backgroundColor: product.accent }}
-          />
+        <>
           <Image
             src={product.packFront}
-            alt={`${product.shortName} packaging`}
-            width={220}
-            height={280}
-            className={`relative h-40 w-auto object-contain drop-shadow-[0_12px_18px_rgba(15,23,42,0.16)] transition duration-500 group-hover:-translate-y-1 group-hover:scale-[1.04] ${
+            alt=""
+            width={180}
+            height={220}
+            className={`relative mb-2 h-32 w-auto object-contain drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)] transition duration-500 group-hover:-translate-y-1 ${
               product.packSide ? "group-hover:opacity-0" : ""
             }`}
           />
@@ -108,59 +136,26 @@ function ProductCard({
             <Image
               src={product.packSide}
               alt=""
-              width={180}
-              height={280}
-              className="absolute bottom-0 h-40 w-auto object-contain opacity-0 drop-shadow-[0_12px_18px_rgba(15,23,42,0.16)] transition duration-500 group-hover:opacity-100"
+              width={160}
+              height={220}
+              className="absolute bottom-2 h-32 w-auto object-contain opacity-0 drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)] transition duration-500 group-hover:opacity-100"
             />
           ) : null}
-        </div>
+        </>
       ) : (
-        <div className="h-1.5" style={{ backgroundColor: product.accent }} />
-      )}
-      <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-center justify-between gap-3">
-          <span className="rounded-sm bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-700">
-            {PRODUCT_CATEGORIES[product.category].label}
+        <span
+          className="sack-placeholder mb-3 flex h-[7.25rem] w-[4.6rem] flex-col overflow-hidden rounded-t-[6px] rounded-b-[10px] shadow-[0_10px_18px_rgba(15,23,42,0.16)]"
+          style={{ backgroundColor: product.accent }}
+          aria-hidden="true"
+        >
+          <span className="h-3 bg-white/25" />
+          <span className="mt-auto bg-white px-1.5 py-2 text-center">
+            <span className="block text-[9px] font-bold leading-tight text-slate-800">
+              {product.shortName}
+            </span>
           </span>
-          <span className="font-mono text-[11px] text-slate-400">{product.sku}</span>
-        </div>
-
-        {product.badge ? (
-          <p className="mt-3 inline-flex w-fit rounded-sm border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold tracking-[0.08em] text-emerald-800">
-            {product.badge}
-          </p>
-        ) : null}
-
-        <h3 className="mt-4 text-xl font-semibold leading-7 text-slate-900">
-          {product.name}
-        </h3>
-        <p className="mt-1 text-sm text-slate-500">{product.chemicalName}</p>
-
-        <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600">
-          {product.summary}
-        </p>
-
-        <ul className="mt-4 space-y-2 text-sm text-slate-700">
-          {product.benefits.slice(0, 3).map((benefit) => (
-            <li key={benefit} className="flex gap-2">
-              <span className="mt-2 size-1.5 shrink-0 bg-gold" />
-              <span>{benefit}</span>
-            </li>
-          ))}
-        </ul>
-
-        <div className="mt-5 flex flex-1 flex-col justify-end">
-          <p className="text-xs text-slate-500">Pack: {product.packaging.primary}</p>
-          <button
-            type="button"
-            onClick={onViewSpecs}
-            className="mt-3 inline-flex h-12 items-center justify-center gap-2 bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
-            View Specs & Download
-            <ArrowUpRight className="size-4" />
-          </button>
-        </div>
-      </div>
-    </article>
+        </span>
+      )}
+    </div>
   );
 }
