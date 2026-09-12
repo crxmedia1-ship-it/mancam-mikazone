@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
 import { FileDown, Phone, UserRound } from "lucide-react";
@@ -9,7 +9,12 @@ import { LeadCaptureModal } from "@/components/LeadCaptureModal";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { ProductSheet } from "@/components/ProductSheet";
 import { ProductTheater } from "@/components/ProductTheater";
-import { StandGuide } from "@/components/StandGuide";
+import {
+  StandGuide,
+  hashFromPane,
+  paneFromHash,
+  type StandPaneId,
+} from "@/components/StandGuide";
 import { StandTracker, recordStandEvent } from "@/components/StandTracker";
 import { getProductById, type Product } from "@/data/products";
 import { downloadMikaZoneCatalog } from "@/lib/catalog";
@@ -25,10 +30,18 @@ const MIKAZONE_LOGO =
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true);
+  const [pane, setPane] = useState<StandPaneId>("home");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [registered, setRegistered] = useState(false);
+
+  function selectPane(next: StandPaneId) {
+    setPane(next);
+    const nextHash = hashFromPane(next);
+    const url = `${window.location.pathname}${window.location.search}${nextHash}`;
+    window.history.replaceState(null, "", url);
+  }
 
   function openRegister(productIds: string[] = []) {
     setActiveProduct(null);
@@ -52,8 +65,28 @@ export default function Home() {
     recordStandEvent("brochure_download");
   }
 
+  useEffect(() => {
+    function applyHash() {
+      if (showIntro) {
+        setPane("home");
+        return;
+      }
+      const hash = window.location.hash;
+      if (hash === "#register") {
+        setPane("home");
+        setModalOpen(true);
+        return;
+      }
+      setPane(paneFromHash(hash));
+    }
+
+    applyHash();
+    window.addEventListener("hashchange", applyHash);
+    return () => window.removeEventListener("hashchange", applyHash);
+  }, [showIntro]);
+
   return (
-    <div className="flex min-h-full flex-col bg-white">
+    <div className="flex h-dvh flex-col overflow-hidden bg-white">
       <StandTracker />
       <AnimatePresence>
         {showIntro ? (
@@ -63,102 +96,61 @@ export default function Home() {
           />
         ) : null}
       </AnimatePresence>
-      <section className="relative flex min-h-dvh w-full flex-col overflow-hidden bg-white pb-10 sm:min-h-0 sm:pb-16">
-        <div
-          aria-hidden="true"
-          className="hero-mesh pointer-events-none absolute inset-0 opacity-70"
-        />
 
-        <div className="relative mx-auto flex w-full max-w-3xl justify-center px-4 py-3 sm:px-6 sm:py-5 lg:max-w-5xl lg:px-8">
+      <header className="relative z-30 shrink-0 border-b border-slate-200/80 bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-4 pb-2 pt-2 sm:px-6 sm:pt-3 lg:px-8">
           <Image
             src={MIKAZONE_LOGO}
             alt={`${PARTNER_NAME} — ${COMPANY_NAME}`}
             width={420}
             height={140}
             priority
-            className="h-14 w-auto max-w-[min(78%,280px)] object-contain sm:h-[4.5rem] sm:max-w-[320px]"
+            className="h-11 w-auto max-w-[min(72%,240px)] object-contain sm:h-14 sm:max-w-[300px]"
+          />
+          <div className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50/90 px-1.5">
+            <StandGuide active={pane} onSelect={selectPane} />
+          </div>
+        </div>
+      </header>
+
+      <main className="relative min-h-0 flex-1 overflow-hidden">
+        <div
+          className={`absolute inset-0 flex min-h-0 flex-col ${
+            pane === "home" ? "z-10" : "pointer-events-none invisible"
+          }`}
+          aria-hidden={pane !== "home"}
+        >
+          <HomePane
+            registered={registered}
+            dormant={showIntro}
+            onSelectProduct={openProductById}
+            onDownload={downloadBrochure}
+            onRegister={() => openRegister()}
           />
         </div>
 
-        <div className="sticky top-0 z-30 hidden border-b border-slate-200/80 bg-white/90 px-4 py-2 backdrop-blur-md sm:block sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-slate-50/90 px-3 lg:max-w-5xl">
-            <StandGuide />
-          </div>
+        <div
+          className={`absolute inset-0 min-h-0 overflow-y-auto overscroll-y-contain ${
+            pane === "about" ? "z-10" : "pointer-events-none invisible"
+          }`}
+          aria-hidden={pane !== "about"}
+        >
+          <AboutSection
+            registered={registered}
+            onDownloadCatalog={downloadBrochure}
+            onRegister={() => openRegister()}
+          />
         </div>
 
-        <div className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pb-2 pt-3 sm:px-6 sm:pt-10 lg:max-w-5xl lg:px-8">
-          <p className="text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-mika sm:text-xs">
-            BuildExpo South Florida · Sep 30 – Oct 1
-          </p>
-          <h1 className="font-display mt-2 text-center text-[2.15rem] leading-[1.05] tracking-tight text-slate-900 sm:text-6xl">
-            Catalog and specifications.
-          </h1>
-          <p className="mx-auto mt-3 max-w-lg text-center text-[14px] leading-6 text-slate-600 sm:mt-4 sm:text-lg">
-            Official MikaZone grades for the U.S. market. {COMPANY_NAME} is
-            the {PARTNER_NAME} partner at this stand.
-          </p>
-
-          <div className="mt-4 flex flex-1 flex-col justify-end sm:mt-10 sm:justify-center">
-            <ProductTheater
-              onSelectProduct={openProductById}
-              dormant={showIntro}
-            />
-          </div>
-
-          <div className="mt-5 flex w-full max-w-xl flex-col gap-2.5 self-center sm:mt-8 sm:flex-row sm:gap-3">
-            <button
-              type="button"
-              onClick={downloadBrochure}
-              className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 text-sm font-bold text-slate-900 sm:min-h-14"
-            >
-              <FileDown className="size-5 shrink-0" />
-              Download catalog
-            </button>
-            <button
-              type="button"
-              onClick={() => openRegister()}
-              className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-bold text-white sm:min-h-14"
-            >
-              <UserRound className="size-5 shrink-0" />
-              {registered ? "You’re registered" : "Request a quote"}
-            </button>
-          </div>
+        <div
+          className={`absolute inset-0 min-h-0 overflow-y-auto overscroll-y-contain ${
+            pane === "catalog" ? "z-10" : "pointer-events-none invisible"
+          }`}
+          aria-hidden={pane !== "catalog"}
+        >
+          <ProductCatalog onViewSpecs={openProductSpecs} />
         </div>
-      </section>
-
-      <AboutSection
-        registered={registered}
-        onDownloadCatalog={downloadBrochure}
-        onRegister={() => openRegister()}
-      />
-
-      <ProductCatalog onViewSpecs={openProductSpecs} />
-
-      <section
-        id="register"
-        className="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-20"
-      >
-        <div className="mx-auto max-w-xl rounded-[28px] border border-slate-200 bg-slate-50 px-5 py-8 text-center sm:px-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
-            Commercial follow-up
-          </p>
-          <h2 className="font-display mt-2 text-[1.85rem] tracking-tight text-slate-900">
-            Request pricing and samples.
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Leave name, company, phone, email, and the grades you want. Mancam
-            follows up with pricing and samples. The catalog stays free.
-          </p>
-          <button
-            type="button"
-            onClick={() => openRegister()}
-            className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-bold text-white"
-          >
-            <UserRound className="size-4" />
-            {registered ? "Update my details" : "Register for a quote"}
-          </button>
-        </div>
-      </section>
+      </main>
 
       <ProductSheet
         product={activeProduct}
@@ -174,15 +166,69 @@ export default function Home() {
         onClose={() => setModalOpen(false)}
         onRegistered={() => setRegistered(true)}
       />
-
-      <footer className="mt-auto w-full bg-slate-900">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <p className="text-xs text-white/35">
-            {COMPANY_NAME} · Official {PARTNER_NAME} partner
-          </p>
-        </div>
-      </footer>
     </div>
+  );
+}
+
+function HomePane({
+  registered,
+  dormant,
+  onSelectProduct,
+  onDownload,
+  onRegister,
+}: {
+  registered: boolean;
+  dormant: boolean;
+  onSelectProduct: (productId: string) => void;
+  onDownload: () => void;
+  onRegister: () => void;
+}) {
+  return (
+    <section className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-white">
+      <div
+        aria-hidden="true"
+        className="hero-mesh pointer-events-none absolute inset-0 opacity-70"
+      />
+
+      <div className="relative mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pt-5 lg:max-w-5xl lg:px-8">
+        <p className="text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-mika sm:text-xs">
+          BuildExpo South Florida · Sep 30 – Oct 1
+        </p>
+        <h1 className="font-display mt-1.5 text-center text-[1.85rem] leading-[1.05] tracking-tight text-slate-900 sm:mt-2 sm:text-5xl">
+          Catalog and specifications.
+        </h1>
+        <p className="mx-auto mt-2 max-w-lg text-center text-[13px] leading-5 text-slate-600 sm:mt-3 sm:text-base sm:leading-6">
+          Official MikaZone grades for the U.S. market. {COMPANY_NAME} is the{" "}
+          {PARTNER_NAME} partner at this stand.
+        </p>
+
+        <div className="mt-3 flex min-h-0 flex-1 flex-col justify-center sm:mt-6">
+          <ProductTheater
+            onSelectProduct={onSelectProduct}
+            dormant={dormant}
+          />
+        </div>
+
+        <div className="mt-3 flex w-full max-w-xl flex-col gap-2 self-center sm:mt-6 sm:flex-row sm:gap-3">
+          <button
+            type="button"
+            onClick={onDownload}
+            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 text-sm font-bold text-slate-900 sm:min-h-14"
+          >
+            <FileDown className="size-5 shrink-0" />
+            Download catalog
+          </button>
+          <button
+            type="button"
+            onClick={onRegister}
+            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-bold text-white sm:min-h-14"
+          >
+            <UserRound className="size-5 shrink-0" />
+            {registered ? "You’re registered" : "Request a quote"}
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -196,7 +242,10 @@ function AboutSection({
   onRegister: () => void;
 }) {
   return (
-    <section id="about" className="relative overflow-hidden bg-sand px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+    <section
+      id="about"
+      className="relative overflow-hidden bg-sand px-4 py-8 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-12 lg:px-8"
+    >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -right-24 top-10 size-72 rounded-full bg-emerald-400/20 blur-3xl"
@@ -210,16 +259,16 @@ function AboutSection({
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-mika">
           Who we are
         </p>
-        <h2 className="font-display mt-3 max-w-2xl text-[2.15rem] leading-[1.08] tracking-tight text-slate-900 sm:text-5xl">
+        <h2 className="font-display mt-2 max-w-2xl text-[1.85rem] leading-[1.08] tracking-tight text-slate-900 sm:text-4xl">
           Factory-direct MikaZone for U.S. plants.
         </h2>
-        <p className="mt-5 max-w-2xl text-[16px] leading-8 text-slate-600 sm:text-lg">
+        <p className="mt-4 max-w-2xl text-[15px] leading-7 text-slate-600 sm:text-lg sm:leading-8">
           {COMPANY_NAME} is the official {PARTNER_NAME} partner in the United
           States. Cellulose ethers, redispersible powders, and construction
           additives — with technical support at this stand.
         </p>
 
-        <ul className="mt-8 grid gap-3 sm:grid-cols-3">
+        <ul className="mt-6 grid gap-3 sm:grid-cols-3">
           {[
             {
               kicker: "Supply",
@@ -242,19 +291,19 @@ function AboutSection({
           ].map((item) => (
             <li
               key={item.label}
-              className="rounded-2xl bg-white px-4 py-5 shadow-[0_16px_40px_-28px_rgba(15,23,42,0.4)]"
+              className="rounded-2xl bg-white px-4 py-4 shadow-[0_16px_40px_-28px_rgba(15,23,42,0.4)]"
               style={{ borderTop: `3px solid ${item.accent}` }}
             >
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                 {item.kicker}
               </p>
-              <p className="mt-1.5 text-base font-bold text-slate-900">{item.label}</p>
+              <p className="mt-1.5 text-sm font-bold text-slate-900">{item.label}</p>
               <p className="mt-1.5 text-[13px] leading-5 text-slate-600">{item.body}</p>
             </li>
           ))}
         </ul>
 
-        <div className="mt-10 overflow-hidden rounded-[28px] bg-white shadow-[0_30px_60px_-36px_rgba(15,23,42,0.28)]">
+        <div className="mt-8 overflow-hidden rounded-[28px] bg-white shadow-[0_30px_60px_-36px_rgba(15,23,42,0.28)]">
           <Image
             src="/about/mikazone-applications.png"
             alt="MikaZone HPMC, MHEC, HEC, and modified cellulose applications"
@@ -267,13 +316,13 @@ function AboutSection({
           </p>
         </div>
 
-        <div className="mt-8 overflow-hidden rounded-[28px] bg-slate-900 px-5 py-7 text-white sm:px-8 sm:py-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-6 overflow-hidden rounded-[28px] bg-slate-900 px-5 py-6 text-white sm:px-8 sm:py-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-lg">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400">
                 Next step
               </p>
-              <h3 className="font-display mt-2 text-[1.65rem] leading-tight tracking-tight sm:text-3xl">
+              <h3 className="font-display mt-2 text-[1.5rem] leading-tight tracking-tight sm:text-3xl">
                 Take the catalog. Leave a quote request.
               </h3>
               <p className="mt-2 text-sm leading-6 text-white/70">
@@ -307,6 +356,10 @@ function AboutSection({
             </div>
           </div>
         </div>
+
+        <p className="mt-6 text-center text-[11px] text-slate-400">
+          {COMPANY_NAME} · Official {PARTNER_NAME} partner
+        </p>
       </div>
     </section>
   );

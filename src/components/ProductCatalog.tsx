@@ -25,22 +25,22 @@ export function ProductCatalog({ onViewSpecs }: ProductCatalogProps) {
   return (
     <section
       id="products"
-      className="w-full bg-slate-50 px-4 py-16 sm:px-6 lg:px-8 lg:py-20"
+      className="w-full bg-slate-50 px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-10 lg:px-8"
     >
       <div className="mx-auto max-w-7xl">
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
             Full lineup
           </p>
-          <h2 className="font-display mt-2 text-[2.1rem] leading-[1.08] tracking-tight text-slate-900 sm:text-5xl">
+          <h2 className="font-display mt-2 text-[1.85rem] leading-[1.08] tracking-tight text-slate-900 sm:text-4xl">
             Ten grades. One catalog.
           </h2>
-          <p className="mt-3 text-[15px] leading-6 text-slate-600">
+          <p className="mt-2 text-[14px] leading-6 text-slate-600 sm:text-[15px]">
             Open a card for the grade. Catalog is free — no login.
           </p>
         </div>
 
-        <div className="sticky top-0 z-20 -mx-4 mt-8 bg-slate-50/95 px-4 py-3 backdrop-blur-md sm:mx-0 sm:px-0">
+        <div className="sticky top-0 z-20 -mx-4 mt-5 bg-slate-50/95 px-4 py-3 backdrop-blur-md sm:mx-0 sm:mt-8 sm:px-0">
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
             {CATALOG_FILTERS.map((item) => {
               const active = item.id === selectedCategory;
@@ -62,7 +62,7 @@ export function ProductCatalog({ onViewSpecs }: ProductCatalogProps) {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid gap-2.5 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
           {visibleProducts.map((product) => (
             <ProductCard
               key={product.id}
@@ -87,26 +87,28 @@ function ProductCard({
     <button
       type="button"
       onClick={onViewSpecs}
-      className="group flex h-full flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white text-left shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] transition-colors"
+      className="group flex h-full flex-row overflow-hidden rounded-[22px] border border-slate-200 bg-white text-left shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] transition-colors sm:flex-col sm:rounded-[26px]"
     >
       <PackVisual product={product} />
-      <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
+      <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-3 sm:px-5 sm:pb-5 sm:pt-4">
         <div className="flex items-center justify-between gap-3">
           <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
             {PRODUCT_CATEGORIES[product.category].label}
           </span>
-          <span className="font-mono text-[11px] text-slate-400">{product.sku}</span>
+          <span className="hidden font-mono text-[11px] text-slate-400 sm:inline">
+            {product.sku}
+          </span>
         </div>
-        <h3 className="mt-2 text-[1.15rem] font-semibold leading-6 tracking-tight text-slate-900">
+        <h3 className="mt-1 text-[1.05rem] font-semibold leading-6 tracking-tight text-slate-900 sm:mt-2 sm:text-[1.15rem]">
           {product.shortName}
         </h3>
-        <p className="mt-1 line-clamp-1 text-[13px] text-slate-500">
+        <p className="mt-0.5 line-clamp-1 text-[12px] text-slate-500 sm:mt-1 sm:text-[13px]">
           {product.chemicalName}
         </p>
-        <p className="mt-3 line-clamp-2 text-[14px] leading-6 text-slate-600">
+        <p className="mt-2 hidden line-clamp-2 text-[14px] leading-6 text-slate-600 sm:mt-3 sm:block">
           {product.summary}
         </p>
-        <span className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 px-4 text-sm font-bold text-slate-900">
+        <span className="mt-3 inline-flex min-h-9 items-center justify-center rounded-xl border border-slate-200 px-3 text-[13px] font-bold text-slate-900 sm:mt-5 sm:min-h-11 sm:rounded-2xl sm:px-4 sm:text-sm">
           Open specs
         </span>
       </div>
@@ -116,7 +118,7 @@ function ProductCard({
 
 function PackVisual({ product }: { product: Product }) {
   return (
-    <div className="relative flex h-36 items-end justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">
+    <div className="relative flex h-28 w-[5.5rem] shrink-0 items-end justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-white sm:h-36 sm:w-full">
       <div
         className="absolute inset-x-0 top-0 h-1.5"
         style={{ backgroundColor: product.accent }}
@@ -127,7 +129,7 @@ function PackVisual({ product }: { product: Product }) {
           alt=""
           width={180}
           height={220}
-          className="relative mb-2 h-32 w-auto object-contain drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)]"
+          className="relative mb-1.5 h-24 w-auto object-contain drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)] sm:mb-2 sm:h-32"
         />
       ) : (
         <span
