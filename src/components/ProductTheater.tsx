@@ -39,7 +39,7 @@ export function ProductTheater({
           dormant ? "invisible" : ""
         }`}
       >
-        HPMC · HEC · RDP — tap for specs
+        HPMC · HEC · RDP — open a grade for specifications
       </p>
     </div>
   );

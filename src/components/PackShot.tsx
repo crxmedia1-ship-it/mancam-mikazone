@@ -18,11 +18,21 @@ export function PackShot({
   onSelect,
 }: PackShotProps) {
   const imgMax = "max-h-[min(48vw,30vh)] sm:max-h-[320px] lg:max-h-[380px]";
+  const mask = {
+    WebkitMaskImage: `url(${sack.front})`,
+    WebkitMaskSize: "contain",
+    WebkitMaskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskImage: `url(${sack.front})`,
+    maskSize: "contain",
+    maskRepeat: "no-repeat",
+    maskPosition: "center",
+  } as const;
 
   const body = (
     <>
       <span
-        className={`sack-aura pointer-events-none absolute bottom-[7%] left-1/2 h-7 w-[78%] rounded-[100%] blur-2xl`}
+        className="sack-aura pointer-events-none absolute bottom-[4%] left-1/2 h-10 w-[88%] rounded-[100%] blur-2xl"
         style={{
           background: sack.accent,
           animationDelay: `${index * 0.45}s`,
@@ -34,12 +44,20 @@ export function PackShot({
         className={`relative mx-auto block w-fit ${alive && !dimmed ? "sack-idle" : ""}`}
         style={{ animationDelay: `${index * 0.45}s` }}
       >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 scale-[1.035] blur-[4px]"
+          style={{ ...mask, backgroundColor: sack.accent, opacity: 0.55 }}
+        />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={sack.front}
           alt=""
           draggable={false}
-          className={`relative mx-auto h-auto w-full select-none object-contain drop-shadow-[0_22px_28px_rgba(15,23,42,0.18)] ${imgMax}`}
+          className={`relative mx-auto h-auto w-full select-none object-contain ${imgMax}`}
+          style={{
+            filter: `drop-shadow(0 16px 18px rgba(15,23,42,0.14))`,
+          }}
         />
       </span>
     </>

@@ -25,7 +25,7 @@ export function ProductCatalog({ onViewSpecs }: ProductCatalogProps) {
   return (
     <section
       id="products"
-      className="w-full bg-slate-50 px-4 py-12 pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-16 lg:px-8 lg:py-16"
+      className="w-full bg-slate-50 px-4 py-16 sm:px-6 lg:px-8 lg:py-20"
     >
       <div className="mx-auto max-w-7xl">
         <div className="max-w-2xl">
