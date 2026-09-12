@@ -102,10 +102,10 @@ export default function Home() {
           <Image
             src={MIKAZONE_LOGO}
             alt={`${PARTNER_NAME} — ${COMPANY_NAME}`}
-            width={420}
-            height={140}
+            width={560}
+            height={180}
             priority
-            className="h-11 w-auto max-w-[min(72%,240px)] object-contain sm:h-14 sm:max-w-[300px]"
+            className="h-[4.35rem] w-auto max-w-[min(92%,360px)] object-contain sm:h-[5.75rem] sm:max-w-[440px]"
           />
           <div className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50/90 px-1.5">
             <StandGuide active={pane} onSelect={selectPane} />
@@ -124,7 +124,6 @@ export default function Home() {
             registered={registered}
             dormant={showIntro}
             onSelectProduct={openProductById}
-            onDownload={downloadBrochure}
             onRegister={() => openRegister()}
           />
         </div>
@@ -148,15 +147,18 @@ export default function Home() {
           }`}
           aria-hidden={pane !== "catalog"}
         >
-          <ProductCatalog onViewSpecs={openProductSpecs} />
+          <ProductCatalog
+            onViewSpecs={openProductSpecs}
+            onDownloadCatalog={downloadBrochure}
+            onRegister={() => openRegister()}
+            registered={registered}
+          />
         </div>
       </main>
 
       <ProductSheet
         product={activeProduct}
         onClose={() => setActiveProduct(null)}
-        onRegister={(product) => openRegister([product.id])}
-        onDownload={(product) => recordStandEvent("brochure_download", product.id)}
       />
 
       <LeadCaptureModal
@@ -174,13 +176,11 @@ function HomePane({
   registered,
   dormant,
   onSelectProduct,
-  onDownload,
   onRegister,
 }: {
   registered: boolean;
   dormant: boolean;
   onSelectProduct: (productId: string) => void;
-  onDownload: () => void;
   onRegister: () => void;
 }) {
   return (
@@ -189,17 +189,21 @@ function HomePane({
         aria-hidden="true"
         className="hero-mesh pointer-events-none absolute inset-0 opacity-70"
       />
+      <div
+        aria-hidden="true"
+        className="usa-flag-wash pointer-events-none absolute inset-0"
+      />
 
       <div className="relative mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pt-5 lg:max-w-5xl lg:px-8">
         <p className="text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-mika sm:text-xs">
           BuildExpo South Florida · Sep 30 – Oct 1
         </p>
         <h1 className="font-display mt-1.5 text-center text-[1.85rem] leading-[1.05] tracking-tight text-slate-900 sm:mt-2 sm:text-5xl">
-          Catalog and specifications.
+          Mancam Global Supply.
         </h1>
         <p className="mx-auto mt-2 max-w-lg text-center text-[13px] leading-5 text-slate-600 sm:mt-3 sm:text-base sm:leading-6">
-          Official MikaZone grades for the U.S. market. {COMPANY_NAME} is the{" "}
-          {PARTNER_NAME} partner at this stand.
+          Official {PARTNER_NAME} partner. Factory-direct cellulose ethers,
+          RDP, and construction additives for U.S. plants.
         </p>
 
         <div className="mt-3 flex min-h-0 flex-1 flex-col justify-center sm:mt-6">
@@ -209,22 +213,18 @@ function HomePane({
           />
         </div>
 
-        <div className="mt-3 flex w-full max-w-xl flex-col gap-2 self-center sm:mt-6 sm:flex-row sm:gap-3">
-          <button
-            type="button"
-            onClick={onDownload}
-            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 text-sm font-bold text-slate-900 sm:min-h-14"
-          >
-            <FileDown className="size-5 shrink-0" />
-            Download catalog
-          </button>
+        <div className="mt-3 w-full max-w-xl self-center sm:mt-6">
+          <p className="text-center text-[13px] leading-5 text-slate-600 sm:text-sm">
+            Leave name, company, phone, and the grades you want. We follow up
+            with pricing and samples.
+          </p>
           <button
             type="button"
             onClick={onRegister}
-            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-bold text-white sm:min-h-14"
+            className="mt-2.5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-bold text-white sm:min-h-14 sm:text-base"
           >
             <UserRound className="size-5 shrink-0" />
-            {registered ? "You’re registered" : "Request a quote"}
+            {registered ? "You’re registered" : "Leave your details"}
           </button>
         </div>
       </div>
@@ -351,7 +351,7 @@ function AboutSection({
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 text-sm font-bold text-white"
               >
                 <UserRound className="size-4" />
-                {registered ? "You’re registered" : "Request a quote"}
+                {registered ? "You’re registered" : "Leave your details"}
               </button>
             </div>
           </div>

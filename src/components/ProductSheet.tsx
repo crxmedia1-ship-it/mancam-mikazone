@@ -2,23 +2,15 @@
 
 import { useEffect, useId, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, UserRound, X } from "lucide-react";
+import { X } from "lucide-react";
 import { PRODUCT_CATEGORIES, type Product } from "@/data/products";
-import { downloadMikaZoneCatalog } from "@/lib/catalog";
 
 type ProductSheetProps = {
   product: Product | null;
   onClose: () => void;
-  onRegister: (product: Product) => void;
-  onDownload: (product: Product) => void;
 };
 
-export function ProductSheet({
-  product,
-  onClose,
-  onRegister,
-  onDownload,
-}: ProductSheetProps) {
+export function ProductSheet({ product, onClose }: ProductSheetProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -112,7 +104,7 @@ export function ProductSheet({
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
               {product.packFront ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -156,28 +148,6 @@ export function ProductSheet({
                   ))}
                 </ul>
               </div>
-            </div>
-
-            <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-5 pt-4 pb-[max(1.1rem,env(safe-area-inset-bottom))]">
-              <button
-                type="button"
-                onClick={() => onRegister(product)}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 text-sm font-bold text-white"
-              >
-                <UserRound className="size-4" />
-                Request a quote
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  downloadMikaZoneCatalog();
-                  onDownload(product);
-                }}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold text-slate-600"
-              >
-                <Download className="size-4" />
-                Download MikaZone catalog
-              </button>
             </div>
           </motion.div>
         </motion.div>

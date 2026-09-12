@@ -249,7 +249,8 @@ export function LeadCaptureModal({
               Leave your details
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              We quote after BuildExpo. The catalog stays free.
+              Name, company, phone, email, and the grades you want. We quote
+              after BuildExpo.
             </p>
           </div>
           <button
@@ -350,7 +351,7 @@ export function LeadCaptureModal({
                 ? "Saving…"
                 : statusTone === "success"
                   ? "Registered"
-                  : "Register at the stand"}
+                  : "Leave my details"}
             </button>
           </div>
         </form>

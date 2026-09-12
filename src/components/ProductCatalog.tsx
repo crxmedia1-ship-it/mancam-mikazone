@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { FileDown, UserRound } from "lucide-react";
 import {
   CATALOG_FILTERS,
   PRODUCT_CATEGORIES,
@@ -12,9 +13,17 @@ import {
 
 type ProductCatalogProps = {
   onViewSpecs: (product: Product) => void;
+  onDownloadCatalog: () => void;
+  onRegister: () => void;
+  registered?: boolean;
 };
 
-export function ProductCatalog({ onViewSpecs }: ProductCatalogProps) {
+export function ProductCatalog({
+  onViewSpecs,
+  onDownloadCatalog,
+  onRegister,
+  registered = false,
+}: ProductCatalogProps) {
   const [selectedCategory, setSelectedCategory] = useState<CatalogFilterId>("all");
 
   const visibleProducts = useMemo(() => {
@@ -28,16 +37,37 @@ export function ProductCatalog({ onViewSpecs }: ProductCatalogProps) {
       className="w-full bg-slate-50 px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-10 lg:px-8"
     >
       <div className="mx-auto max-w-7xl">
-        <div className="max-w-2xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
-            Full lineup
-          </p>
-          <h2 className="font-display mt-2 text-[1.85rem] leading-[1.08] tracking-tight text-slate-900 sm:text-4xl">
-            Ten grades. One catalog.
-          </h2>
-          <p className="mt-2 text-[14px] leading-6 text-slate-600 sm:text-[15px]">
-            Open a card for the grade. Catalog is free — no login.
-          </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
+              Full lineup
+            </p>
+            <h2 className="font-display mt-2 text-[1.85rem] leading-[1.08] tracking-tight text-slate-900 sm:text-4xl">
+              Ten grades. One catalog.
+            </h2>
+            <p className="mt-2 text-[14px] leading-6 text-slate-600 sm:text-[15px]">
+              Open a card for the specs. Download the full catalog or leave
+              your details above.
+            </p>
+          </div>
+          <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:min-w-[16rem]">
+            <button
+              type="button"
+              onClick={onDownloadCatalog}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 text-sm font-bold text-slate-900 sm:min-h-14"
+            >
+              <FileDown className="size-5 shrink-0" />
+              Download catalog
+            </button>
+            <button
+              type="button"
+              onClick={onRegister}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-bold text-white sm:min-h-14"
+            >
+              <UserRound className="size-5 shrink-0" />
+              {registered ? "You’re registered" : "Leave your details"}
+            </button>
+          </div>
         </div>
 
         <div className="sticky top-0 z-20 -mx-4 mt-5 bg-slate-50/95 px-4 py-3 backdrop-blur-md sm:mx-0 sm:mt-8 sm:px-0">
