@@ -241,6 +241,21 @@
   animation: sack-aura 3.8s ease-in-out infinite;
 }
 
+@keyframes sack-caption-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.sack-caption-in {
+  animation: sack-caption-in 1.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .product-studio::before {
   content: "";
   pointer-events: none;
@@ -255,6 +270,16 @@
 }
 
 @media (max-width: 767px) {
+  .sack-caption-in {
+    animation-duration: 1.5s;
+  }
+
+  .hero-mesh,
+  .sack-idle,
+  .sack-aura {
+    animation: none;
+  }
+
   .usa-flag-wash::before {
     display: none;
     animation: none;
@@ -268,7 +293,8 @@
   .sheet-enter,
   .lead-sheet-enter,
   .sack-idle,
-  .sack-aura {
+  .sack-aura,
+  .sack-caption-in {
     animation: none;
   }
 

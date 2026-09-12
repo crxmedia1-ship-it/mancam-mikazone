@@ -15,7 +15,7 @@ export function ProductTheater({
   return (
     <div className="product-studio relative mx-auto w-full max-w-2xl xl:max-w-5xl 2xl:max-w-6xl">
       <div
-        className="pointer-events-none absolute inset-x-8 bottom-14 h-16 rounded-[100%] bg-slate-900/[0.06] blur-3xl"
+        className="pointer-events-none absolute inset-x-8 bottom-14 hidden h-16 rounded-[100%] bg-slate-900/[0.06] blur-3xl sm:block"
         aria-hidden="true"
       />
       <div
@@ -36,8 +36,9 @@ export function ProductTheater({
       </div>
       <p
         className={`mt-2 text-center text-[12px] font-semibold text-slate-600 sm:mt-3 sm:text-sm ${
-          dormant ? "invisible" : ""
+          dormant ? "invisible" : "sack-caption-in"
         }`}
+        style={dormant ? undefined : { animationDelay: "0.18s" }}
       >
         HPMC · HEC · RDP — open a grade for specifications
       </p>

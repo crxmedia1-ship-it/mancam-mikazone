@@ -3,7 +3,6 @@
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -22,25 +21,24 @@ import {
   RefreshCw,
   Star,
   Users,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
+import {
+  loadAdminDashboard,
+  updateLeadNotes,
+  updateLeadRating,
+} from "@/app/actions/admin";
 import { PRODUCTS, getProductById } from "@/data/products";
 import {
   PRIMARY_APPLICATION_LABELS,
   PROFILE_TYPE_LABELS,
   PURCHASE_VOLUME_LABELS,
-  normalizeLead,
   type LeadRecord,
 } from "@/lib/lead";
 import {
   emptyStandStats,
-  normalizeStandEvent,
   summarizeStandEvents,
-  type StandEventRecord,
   type StandStats,
 } from "@/lib/events";
-import { createSupabaseClient } from "@/lib/supabase";
 
 const ADMIN_UNLOCK_KEY = "mancam-mikazone:admin-unlocked";
 const EVENT_PIN = process.env.NEXT_PUBLIC_EVENT_PIN?.trim() || "2026";
@@ -128,6 +126,56 @@ function fileStamp(): string {
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+}
+
+function csvCell(value: string | number): string {
+  const text = String(value);
+  if (/[",\n]/.test(text)) return `"${text.replaceAll('"', '""')}"`;
+  return text;
+}
+
+function downloadCsvBackup(leads: LeadRecord[], stats: StandStats) {
+  const header = [
+    "Name",
+    "Company",
+    "Email",
+    "Phone",
+    "Products",
+    "Rating",
+    "Notes",
+    "Captured",
+  ];
+  const rows = leads.map((lead) => [
+    lead.fullName,
+    lead.companyName,
+    lead.email,
+    lead.phone,
+    productLabels(lead.productsOfInterest),
+    lead.rating ?? "",
+    lead.notes,
+    lead.createdAt ?? "",
+  ]);
+  const traffic = [
+    [],
+    ["Metric", "Value"],
+    ["QR / link visits", stats.visits],
+    ["Unique phones / sessions", stats.uniqueSessions],
+    ["Registrations", leads.length],
+    ["Brochure downloads", stats.brochureDownloads],
+    ["Register form opens", stats.registerOpens],
+  ];
+  const csv = [header, ...rows, ...traffic]
+    .map((row) => row.map(csvCell).join(","))
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `Mancam-MikaZone-stand-${fileStamp()}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export default function AdminLeadsPage() {
@@ -278,138 +326,73 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
 }
 
 function LeadsDashboard({ onLock }: { onLock: () => void }) {
-  const supabase = useMemo(() => createSupabaseClient(), []);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [stats, setStats] = useState<StandStats>(emptyStandStats);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [live, setLive] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<"ok" | "error">("ok");
   const notesDrafts = useRef<Record<string, string>>({});
 
-  const applyEvents = useCallback((rows: StandEventRecord[]) => {
-    setStats(summarizeStandEvents(rows));
-  }, []);
+  const loadLeads = useCallback(async (mode: "initial" | "manual" | "poll" = "initial") => {
+    if (mode === "manual") setRefreshing(true);
 
-  const loadLeads = useCallback(
-    async (mode: "initial" | "manual" = "initial") => {
-      if (mode === "manual") setRefreshing(true);
-      const [{ data, error }, eventsResult] = await Promise.all([
-        supabase.from("leads").select("*").order("created_at", { ascending: false }),
-        supabase.from("stand_events").select("*").order("created_at", { ascending: false }),
-      ]);
-
-      if (error) {
-        setStatusTone("error");
-        setStatus(error.message);
-      } else {
-        const next = (data ?? [])
-          .map((row) => normalizeLead(row as Record<string, unknown>))
-          .filter((row): row is LeadRecord => row !== null);
-        setLeads(next);
+    try {
+      const result = await loadAdminDashboard();
+      if (result.ok) {
+        setLeads(result.data.leads);
+        setStats(summarizeStandEvents(result.data.events));
         if (mode === "manual") {
           setStatusTone("ok");
-          setStatus(`Updated · ${next.length} prospect${next.length === 1 ? "" : "s"}`);
+          setStatus(
+            `Updated · ${result.data.leads.length} prospect${
+              result.data.leads.length === 1 ? "" : "s"
+            } · ${result.data.events.length} stand events`,
+          );
+        } else if (mode === "initial") {
+          setStatus(null);
         }
-      }
-
-      if (eventsResult.error) {
-        applyEvents([]);
       } else {
-        applyEvents(
-          (eventsResult.data ?? [])
-            .map((row) => normalizeStandEvent(row as Record<string, unknown>))
-            .filter((row): row is StandEventRecord => row !== null),
-        );
+        setStatusTone("error");
+        setStatus(result.error);
       }
+    } catch (error) {
+      setStatusTone("error");
+      setStatus(
+        error instanceof Error && /load failed|failed to fetch/i.test(error.message)
+          ? "Could not reach the stand database. Tap Refresh."
+          : error instanceof Error
+            ? error.message
+            : "Could not load the stand panel.",
+      );
+    }
 
-      setLoading(false);
-      setRefreshing(false);
-    },
-    [applyEvents, supabase],
-  );
+    setLoading(false);
+    setRefreshing(false);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
-    void supabase
-      .from("leads")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (cancelled) return;
+    void loadLeads("initial");
 
-        if (error) {
-          setStatusTone("error");
-          setStatus(error.message);
-        } else {
-          const next = (data ?? [])
-            .map((row) => normalizeLead(row as Record<string, unknown>))
-            .filter((row): row is LeadRecord => row !== null);
-          setLeads(next);
-        }
+    const poll = window.setInterval(() => {
+      if (cancelled || document.visibilityState === "hidden") return;
+      void loadLeads("poll");
+    }, 8000);
 
-        setLoading(false);
-      });
-
-    void supabase
-      .from("stand_events")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) {
-          return;
-        }
-        applyEvents(
-          (data ?? [])
-            .map((row) => normalizeStandEvent(row as Record<string, unknown>))
-            .filter((row): row is StandEventRecord => row !== null),
-        );
-      });
-
-    const channel = supabase
-      .channel("stand-leads")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "leads" },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            const incoming = normalizeLead(payload.new as Record<string, unknown>);
-            if (!incoming) return;
-            setLeads((current) =>
-              current.some((lead) => lead.id === incoming.id)
-                ? current
-                : [incoming, ...current],
-            );
-          }
-
-          if (payload.eventType === "UPDATE") {
-            const incoming = normalizeLead(payload.new as Record<string, unknown>);
-            if (!incoming) return;
-            setLeads((current) =>
-              current.map((lead) => (lead.id === incoming.id ? incoming : lead)),
-            );
-          }
-
-          if (payload.eventType === "DELETE") {
-            const removed = payload.old as { id?: string };
-            if (!removed.id) return;
-            setLeads((current) => current.filter((lead) => lead.id !== removed.id));
-          }
-        },
-      )
-      .subscribe((subscriptionStatus) => {
-        setLive(subscriptionStatus === "SUBSCRIBED");
-      });
+    function onVisible() {
+      if (document.visibilityState === "visible") void loadLeads("poll");
+    }
+    document.addEventListener("visibilitychange", onVisible);
 
     return () => {
       cancelled = true;
-      void supabase.removeChannel(channel);
+      window.clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [applyEvents, supabase]);
+  }, [loadLeads]);
 
   async function updateRating(leadId: string, rating: number) {
     const nextRating = leads.find((lead) => lead.id === leadId)?.rating === rating ? null : rating;
@@ -419,15 +402,17 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
       ),
     );
 
-    const { error } = await supabase
-      .from("leads")
-      .update({ rating: nextRating })
-      .eq("id", leadId);
-
-    if (error) {
+    try {
+      const result = await updateLeadRating(leadId, nextRating);
+      if (!result.ok) {
+        setStatusTone("error");
+        setStatus(result.error);
+        void loadLeads("poll");
+      }
+    } catch {
       setStatusTone("error");
-      setStatus(error.message);
-      void loadLeads("initial");
+      setStatus("Could not save the rating. Tap Refresh.");
+      void loadLeads("poll");
     }
   }
 
@@ -439,11 +424,17 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
       current.map((lead) => (lead.id === leadId ? { ...lead, notes } : lead)),
     );
 
-    const { error } = await supabase.from("leads").update({ notes }).eq("id", leadId);
-    if (error) {
+    try {
+      const result = await updateLeadNotes(leadId, notes);
+      if (!result.ok) {
+        setStatusTone("error");
+        setStatus(result.error);
+        void loadLeads("poll");
+      }
+    } catch {
       setStatusTone("error");
-      setStatus(error.message);
-      void loadLeads("initial");
+      setStatus("Could not save the note. Tap Refresh.");
+      void loadLeads("poll");
     }
   }
 
@@ -509,10 +500,20 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
       setStatusTone("ok");
       setStatus("Exported leads, traffic, and product taps to Excel.");
     } catch (error) {
-      setStatusTone("error");
-      setStatus(
-        error instanceof Error ? error.message : "Could not export the Excel file.",
-      );
+      try {
+        downloadCsvBackup(leads, stats);
+        setStatusTone("ok");
+        setStatus("Excel was blocked on this phone, so a CSV file was downloaded instead.");
+      } catch {
+        setStatusTone("error");
+        setStatus(
+          error instanceof Error && /load failed|failed to fetch/i.test(error.message)
+            ? "Could not export on this phone. Try from a computer."
+            : error instanceof Error
+              ? error.message
+              : "Could not export the Excel file.",
+        );
+      }
     } finally {
       setExporting(false);
     }
@@ -530,7 +531,7 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
               height={60}
               className="h-10 w-auto object-contain sm:h-11"
             />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-mika">
                 Mancam · MikaZone stand
               </p>
@@ -538,25 +539,12 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
                 Commercial panel
               </h1>
             </div>
-            <span
-              aria-live="polite"
-              className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-sand px-2.5 py-1.5 text-xs font-semibold text-usa lg:hidden"
-            >
-              {live ? (
-                <Wifi className="size-3.5 text-mika" />
-              ) : (
-                <WifiOff className="size-3.5 text-usa/40" />
-              )}
+            <p className="ml-auto shrink-0 text-right text-xs font-semibold text-usa lg:hidden">
               <span className="tabular-nums">{leads.length}</span>
-            </span>
-            <button
-              type="button"
-              onClick={onLock}
-              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-sand text-usa lg:hidden"
-              aria-label="Lock panel"
-            >
-              <Lock className="size-4" />
-            </button>
+              <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-usa/45">
+                prospects
+              </span>
+            </p>
           </div>
 
           <div className="hidden items-center gap-2 lg:flex">
@@ -567,11 +555,6 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
               <Users className="size-4 text-mika" />
               <strong className="tabular-nums">{leads.length}</strong>
               live lead{leads.length === 1 ? "" : "s"}
-              {live ? (
-                <Wifi className="size-4 text-mika" />
-              ) : (
-                <WifiOff className="size-4 text-usa/40" />
-              )}
             </span>
             <DashboardActions
               refreshing={refreshing}
@@ -579,7 +562,6 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
               onRefresh={() => void loadLeads("manual")}
               onExport={() => void exportExcel()}
               onLock={onLock}
-              showLock
             />
           </div>
         </div>
@@ -792,6 +774,7 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
           exporting={exporting}
           onRefresh={() => void loadLeads("manual")}
           onExport={() => void exportExcel()}
+          onLock={onLock}
         />
       </div>
     </div>
@@ -828,14 +811,12 @@ function DashboardActions({
   onRefresh,
   onExport,
   onLock,
-  showLock = false,
 }: {
   refreshing: boolean;
   exporting: boolean;
   onRefresh: () => void;
   onExport: () => void;
-  onLock?: () => void;
-  showLock?: boolean;
+  onLock: () => void;
 }) {
   return (
     <div className="flex gap-2">
@@ -861,16 +842,14 @@ function DashboardActions({
         )}
         Export Excel
       </button>
-      {showLock && onLock ? (
-        <button
-          type="button"
-          onClick={onLock}
-          className="inline-flex h-12 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-semibold text-usa ring-1 ring-usa/10"
-        >
-          <Lock className="size-4" />
-          Lock
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={onLock}
+        className="inline-flex h-12 items-center gap-2 rounded-2xl bg-white px-3 text-sm font-semibold text-usa ring-1 ring-usa/10 lg:px-4"
+      >
+        <Lock className="size-4" />
+        Lock
+      </button>
     </div>
   );
 }

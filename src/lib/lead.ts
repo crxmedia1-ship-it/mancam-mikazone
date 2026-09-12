@@ -91,6 +91,13 @@ export const leadSchema = z.object({
 
 export type LeadInput = z.infer<typeof leadSchema>;
 
+export function isLeadNetworkError(message: string | undefined): boolean {
+  if (!message) return false;
+  return /could not reach|load failed|failed to fetch|networkerror|stand database/i.test(
+    message,
+  );
+}
+
 export type SubmitLeadResult =
   | { ok: true }
   | {

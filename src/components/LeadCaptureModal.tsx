@@ -18,7 +18,12 @@ import {
 } from "lucide-react";
 import { submitLead } from "@/app/actions/leads";
 import { PRODUCTS, type Product } from "@/data/products";
-import { leadSchema, type LeadInput } from "@/lib/lead";
+import {
+  isLeadNetworkError,
+  leadSchema,
+  type LeadInput,
+  type SubmitLeadResult,
+} from "@/lib/lead";
 
 const PENDING_LEADS_KEY = "mancam-mikazone:pending-leads";
 
@@ -68,6 +73,34 @@ function queueLead(lead: LeadInput) {
   const pending = readPendingLeads();
   pending.push({ ...lead, queuedAt: new Date().toISOString() });
   writePendingLeads(pending);
+}
+
+async function sendLead(input: LeadInput): Promise<SubmitLeadResult> {
+  try {
+    return await submitLead(input);
+  } catch (error) {
+    try {
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      const payload = (await response.json()) as SubmitLeadResult;
+      if (payload && typeof payload === "object" && "ok" in payload) {
+        return payload;
+      }
+    } catch {
+      // Fall through to the network error below.
+    }
+
+    return {
+      ok: false,
+      error:
+        error instanceof Error && isLeadNetworkError(error.message)
+          ? "Could not reach the stand database."
+          : "Could not reach the stand database.",
+    };
+  }
 }
 
 function firstError(
@@ -176,7 +209,7 @@ export function LeadCaptureModal({
 
       const remaining: PendingLead[] = [];
       for (const item of pending) {
-        const result = await submitLead(item);
+        const result = await sendLead(item);
         if (!result.ok) remaining.push(item);
         if (cancelled) return;
       }
@@ -236,7 +269,7 @@ export function LeadCaptureModal({
     }
 
     startTransition(async () => {
-      const result = await submitLead(parsed.data);
+      const result = await sendLead(parsed.data);
 
       if (result.ok) {
         setStatusTone("success");
@@ -254,12 +287,18 @@ export function LeadCaptureModal({
         return;
       }
 
-      queueLead(parsed.data);
-      setStatusTone("offline");
-      setStatusMessage(
-        "No connection right now. Your details were saved on this phone and will sync when the stand is back online.",
-      );
-      onRegistered?.();
+      if (isLeadNetworkError(result.error)) {
+        queueLead(parsed.data);
+        setStatusTone("offline");
+        setStatusMessage(
+          "No connection right now. Your details were saved on this phone and will sync when the stand is back online.",
+        );
+        onRegistered?.();
+        return;
+      }
+
+      setStatusTone("error");
+      setStatusMessage(result.error);
     });
   }
 
