@@ -114,7 +114,11 @@ export default function Home() {
           </p>
 
           <div className="mt-4 flex flex-1 flex-col justify-end sm:mt-10 sm:justify-center">
-            <ProductTheater onSelectProduct={openProductById} coach={!hasViewed} />
+            <ProductTheater
+              onSelectProduct={openProductById}
+              coach={!hasViewed}
+              dormant={showIntro}
+            />
           </div>
 
           <div className="mt-8 hidden w-full max-w-xl flex-col gap-3 self-center sm:flex sm:flex-row">

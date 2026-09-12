@@ -7,11 +7,13 @@ import { SACK_LINEUP, SACK_REST_ROTATE } from "@/data/sacks";
 type ProductTheaterProps = {
   onSelectProduct: (productId: string) => void;
   coach?: boolean;
+  dormant?: boolean;
 };
 
 export function ProductTheater({
   onSelectProduct,
   coach = false,
+  dormant = false,
 }: ProductTheaterProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
@@ -35,7 +37,10 @@ export function ProductTheater({
         aria-hidden="true"
       />
       <div
-        className="relative grid grid-cols-3 items-end gap-1 transition-transform duration-500 ease-out sm:gap-3"
+        id="stand-bags"
+        className={`relative grid grid-cols-3 items-end gap-1 transition-transform duration-500 ease-out sm:gap-3 ${
+          dormant ? "invisible" : ""
+        }`}
         style={{
           transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0)`,
         }}
@@ -55,7 +60,11 @@ export function ProductTheater({
           />
         ))}
       </div>
-      <p className="mt-2 text-center text-[12px] font-semibold text-slate-600 sm:mt-3 sm:text-sm">
+      <p
+        className={`mt-2 text-center text-[12px] font-semibold text-slate-600 sm:mt-3 sm:text-sm ${
+          dormant ? "invisible" : ""
+        }`}
+      >
         HPMC · HEC · RDP — tap for specs
       </p>
     </div>
