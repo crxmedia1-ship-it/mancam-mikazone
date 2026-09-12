@@ -127,7 +127,7 @@ export default function Home() {
         </div>
 
         <div
-          className={`absolute inset-0 min-h-0 overflow-y-auto overscroll-y-contain ${
+          className={`absolute inset-0 min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain ${
             pane === "about" ? "z-10" : "pointer-events-none invisible"
           }`}
           aria-hidden={pane !== "about"}
@@ -140,7 +140,7 @@ export default function Home() {
         </div>
 
         <div
-          className={`absolute inset-0 min-h-0 overflow-y-auto overscroll-y-contain ${
+          className={`absolute inset-0 min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain ${
             pane === "catalog" ? "z-10" : "pointer-events-none invisible"
           }`}
           aria-hidden={pane !== "catalog"}

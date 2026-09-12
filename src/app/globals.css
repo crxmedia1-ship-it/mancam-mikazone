@@ -225,6 +225,16 @@
   animation: sack-idle 4.6s ease-in-out infinite;
 }
 
+@keyframes sack-idle-mobile {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+
 @keyframes sack-aura {
   0%,
   100% {
@@ -274,8 +284,12 @@
     animation-duration: 1.5s;
   }
 
+  .sack-idle {
+    animation-name: sack-idle-mobile;
+    animation-duration: 5.2s;
+  }
+
   .hero-mesh,
-  .sack-idle,
   .sack-aura {
     animation: none;
   }

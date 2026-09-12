@@ -60,10 +60,10 @@ function PhotoSlot({
   bleed?: boolean;
 }) {
   return (
-    <figure className={bleed ? "-mx-4 sm:-mx-6 lg:-mx-8 xl:-mx-12" : ""}>
+    <figure className={bleed ? "w-full min-w-0" : "min-w-0"}>
       <div
         className={`relative overflow-hidden bg-[#eef1f4] ${aspect} ${
-          bleed ? "sm:rounded-none" : "rounded-[26px] ring-1 ring-slate-200/80"
+          bleed ? "" : "rounded-[26px] ring-1 ring-slate-200/80"
         }`}
       >
         <span
@@ -107,13 +107,13 @@ export function AboutStory({
   return (
     <article
       id="about"
-      className="bg-white pb-[max(2rem,env(safe-area-inset-bottom))]"
+      className="overflow-x-hidden bg-white pb-[max(2rem,env(safe-area-inset-bottom))]"
     >
       <header className="mx-auto max-w-3xl px-4 pt-8 sm:max-w-4xl sm:px-6 sm:pt-12 lg:px-8 xl:max-w-5xl xl:px-12">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-mika">
           Who we are
         </p>
-        <h2 className="font-display mt-3 text-[2.15rem] leading-[0.98] tracking-tight text-navy sm:text-6xl sm:leading-[0.96]">
+        <h2 className="font-display mt-3 text-[2.15rem] leading-[1.08] tracking-tight text-navy [overflow-wrap:anywhere] sm:text-6xl sm:leading-[0.96]">
           Building better solutions together.
         </h2>
         <p className="mt-5 max-w-2xl text-[16px] leading-8 text-slate-600 sm:mt-6 sm:text-[18px] sm:leading-9">
@@ -134,12 +134,12 @@ export function AboutStory({
       </div>
 
       <section className="mx-auto mt-12 max-w-6xl px-4 sm:mt-16 sm:px-6 lg:px-8 xl:px-12">
-        <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
+        <div className="grid min-w-0 items-end gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky">
               About MikaZone
             </p>
-            <h3 className="font-display mt-3 text-[1.85rem] leading-[1.04] tracking-tight text-navy sm:text-[2.6rem]">
+            <h3 className="font-display mt-3 text-[1.85rem] leading-[1.08] tracking-tight text-navy [overflow-wrap:anywhere] sm:text-[2.6rem]">
               Your global partner in construction additive solutions.
             </h3>
             <p className="mt-5 text-[16px] leading-8 text-slate-600 sm:text-[17px] sm:leading-8">
@@ -171,9 +171,12 @@ export function AboutStory({
           <p className="font-display mt-3 max-w-xl text-[1.7rem] leading-[1.08] tracking-tight sm:text-[2.15rem]">
             Specified into the systems U.S. plants already run.
           </p>
-          <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
+          <ul className="mt-6 grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4">
             {USES.map((item) => (
-              <li key={item} className="text-[14px] leading-5 text-white/95 sm:text-[15px]">
+              <li
+                key={item}
+                className="min-w-0 text-[13px] leading-5 break-words text-white/95 sm:text-[15px]"
+              >
                 {item}
               </li>
             ))}
@@ -195,7 +198,7 @@ export function AboutStory({
             </span>
           ))}
         </div>
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="mt-8 grid min-w-0 grid-cols-2 gap-3 sm:gap-4">
           <PhotoSlot
             aspect="aspect-[3/4] sm:aspect-[4/5]"
             label="On the wall"
@@ -216,7 +219,7 @@ export function AboutStory({
         <h3 className="font-display mt-3 max-w-2xl text-[1.85rem] leading-[1.04] tracking-tight text-navy sm:text-[2.55rem]">
           Mortars, coatings, and concrete — one toolbox.
         </h3>
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-start">
+        <div className="mt-8 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-start">
           <ul className="space-y-7">
             {LINES.map((line) => (
               <li key={line.title} className="border-t border-slate-200/90 pt-6 first:border-t-0 first:pt-0">
