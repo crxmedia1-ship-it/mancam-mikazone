@@ -53,56 +53,19 @@
   animation: mesh-drift 28s linear infinite;
 }
 
-@keyframes sack-idle {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-.sack-idle {
-  animation: sack-idle 5s ease-in-out infinite;
-}
-
-@keyframes pack-sheen-move {
+@keyframes sheet-up {
   from {
-    transform: translateX(-130%);
+    opacity: 0;
+    transform: translateY(24px);
   }
   to {
-    transform: translateX(130%);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.pack-sheen::after {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 36%,
-    rgb(255 255 255 / 0.55) 50%,
-    transparent 64%
-  );
-  mix-blend-mode: soft-light;
-  animation: pack-sheen-move 0.9s ease-out;
-}
-
-@keyframes coach-pulse {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 0 rgb(16 185 129 / 0));
-  }
-  50% {
-    filter: drop-shadow(0 0 14px rgb(16 185 129 / 0.7));
-  }
-}
-
-.coach-pulse {
-  animation: coach-pulse 1.6s ease-in-out infinite;
+.sheet-enter {
+  animation: sheet-up 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .product-studio::before {
@@ -120,10 +83,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hero-fade,
-  .sack-idle,
-  .coach-pulse,
   .hero-mesh,
-  .pack-sheen::after {
+  .sheet-enter {
     animation: none;
   }
 }

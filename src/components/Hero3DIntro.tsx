@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { PackShot } from "@/components/PackShot";
-import { SACK_IMAGE_SRC, SACK_LINEUP, SACK_REST_ROTATE } from "@/data/sacks";
+import { SACK_IMAGE_SRC, SACK_LINEUP } from "@/data/sacks";
 
-const INTRO_MS = 4600;
+const INTRO_MS = 4300;
 const STAMP_MS = 1480;
-const SETTLE_MS = 2700;
+const SETTLE_MS = 2550;
 const LOGO_SRC =
   "https://res.cloudinary.com/dgphys1xd/image/upload/v1788992084/Photoroom_20260909_181404_r3umw2.png";
 
@@ -117,22 +117,22 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
         }}
         initial={{ opacity: 1 }}
         animate={{ opacity: settling ? 0 : 1 }}
-        transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       />
 
       <motion.div
         className="pointer-events-none absolute inset-x-0 top-[8%] z-10 flex flex-col items-center px-4 text-center sm:top-[7%]"
-        initial={{ opacity: 0, y: 12, scale: 0.9 }}
+        initial={{ opacity: 0, y: 12, scale: 0.94 }}
         animate={
           stamped
             ? {
                 opacity: settling ? 0 : 1,
-                y: settling ? -16 : 0,
-                scale: settling ? 0.92 : [0.9, 1.04, 1],
+                y: settling ? -12 : 0,
+                scale: settling ? 0.96 : 1,
               }
-            : { opacity: 0, y: 12, scale: 0.9 }
+            : { opacity: 0, y: 12, scale: 0.94 }
         }
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -154,75 +154,22 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
             left: slot.left,
             width: slot.width,
           }}
-          transition={
-            settling
-              ? { type: "spring", stiffness: 120, damping: 18, mass: 1.15 }
-              : { duration: 0 }
-          }
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
-          <motion.div
-            className="pointer-events-none absolute inset-x-[6%] bottom-[2%] h-10 rounded-[100%] bg-slate-900/25 blur-2xl"
-            initial={{ opacity: 0, scaleX: 0.45 }}
-            animate={
-              ready
-                ? {
-                    opacity: settling ? 0 : [0, 0.55, 0.28],
-                    scaleX: settling ? 0.8 : [0.45, 1.12, 1],
-                  }
-                : { opacity: 0, scaleX: 0.45 }
-            }
-            transition={{ duration: 0.7, delay: settling ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
-            aria-hidden="true"
-          />
-
-          <div
-            className={`relative grid grid-cols-3 items-end ${
-              settling ? "gap-1 sm:gap-3" : "gap-2 sm:gap-6"
-            }`}
-          >
+          <div className="relative grid grid-cols-3 items-end gap-1 sm:gap-3">
             {SACK_LINEUP.map((sack, index) => (
               <motion.div
                 key={sack.productId}
                 className="origin-bottom"
-                initial={{ y: "-78vh", opacity: 0 }}
-                animate={ready ? { y: 0, opacity: 1 } : { y: "-78vh", opacity: 0 }}
+                initial={{ y: "-70vh", opacity: 0 }}
+                animate={ready ? { y: 0, opacity: 1 } : { y: "-70vh", opacity: 0 }}
                 transition={{
-                  y: {
-                    delay: 0.08 + index * 0.12,
-                    type: "spring",
-                    stiffness: 210,
-                    damping: 20,
-                    mass: 1.7,
-                  },
-                  opacity: { duration: 0.18, delay: 0.08 + index * 0.12 },
+                  delay: 0.1 + index * 0.1,
+                  duration: 0.85,
+                  ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                <motion.div
-                  className="origin-bottom"
-                  initial={{ scaleY: 1.06 }}
-                  animate={
-                    ready
-                      ? {
-                          scaleY: [1.08, 0.86, 1.05, 0.98, 1],
-                          rotate: SACK_REST_ROTATE[index],
-                        }
-                      : { scaleY: 1.06, rotate: 0 }
-                  }
-                  transition={{
-                    delay: 0.62 + index * 0.12,
-                    duration: 0.48,
-                    ease: "easeOut",
-                  }}
-                >
-                  <PackShot
-                    sack={sack}
-                    restRotate={0}
-                    interactive={false}
-                    alive={false}
-                    size={settling ? "hero" : "intro"}
-                    index={index}
-                  />
-                </motion.div>
+                <PackShot sack={sack} />
               </motion.div>
             ))}
           </div>

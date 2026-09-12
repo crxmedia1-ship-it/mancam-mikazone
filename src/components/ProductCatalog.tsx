@@ -33,10 +33,10 @@ export function ProductCatalog({ onViewSpecs }: ProductCatalogProps) {
             Full lineup
           </p>
           <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-            Ten grades. One brochure.
+            Ten grades. One catalog.
           </h2>
           <p className="mt-3 text-[15px] leading-6 text-slate-600">
-            Open a card for specs and a datasheet. No login.
+            Open a card for the grade. Catalog is free — no login.
           </p>
         </div>
 
@@ -87,7 +87,7 @@ function ProductCard({
     <button
       type="button"
       onClick={onViewSpecs}
-      className="group flex h-full flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white text-left shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] transition hover:border-slate-300 hover:shadow-[0_18px_40px_-22px_rgba(15,23,42,0.4)]"
+      className="group flex h-full flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white text-left shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] transition-colors"
     >
       <PackVisual product={product} />
       <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
@@ -106,7 +106,7 @@ function ProductCard({
         <p className="mt-3 line-clamp-2 text-[14px] leading-6 text-slate-600">
           {product.summary}
         </p>
-        <span className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl border-2 border-slate-900 bg-white px-4 text-sm font-bold text-slate-900 group-hover:bg-slate-900 group-hover:text-white">
+        <span className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 px-4 text-sm font-bold text-slate-900">
           Open specs
         </span>
       </div>
@@ -122,26 +122,13 @@ function PackVisual({ product }: { product: Product }) {
         style={{ backgroundColor: product.accent }}
       />
       {product.packFront ? (
-        <>
-          <Image
-            src={product.packFront}
-            alt=""
-            width={180}
-            height={220}
-            className={`relative mb-2 h-32 w-auto object-contain drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)] transition duration-500 group-hover:-translate-y-1 ${
-              product.packSide ? "group-hover:opacity-0" : ""
-            }`}
-          />
-          {product.packSide ? (
-            <Image
-              src={product.packSide}
-              alt=""
-              width={160}
-              height={220}
-              className="absolute bottom-2 h-32 w-auto object-contain opacity-0 drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)] transition duration-500 group-hover:opacity-100"
-            />
-          ) : null}
-        </>
+        <Image
+          src={product.packFront}
+          alt=""
+          width={180}
+          height={220}
+          className="relative mb-2 h-32 w-auto object-contain drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)]"
+        />
       ) : (
         <span
           className="sack-placeholder mb-3 flex h-[7.25rem] w-[4.6rem] flex-col overflow-hidden rounded-t-[6px] rounded-b-[10px] shadow-[0_10px_18px_rgba(15,23,42,0.16)]"

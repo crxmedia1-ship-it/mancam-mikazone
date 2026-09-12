@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
-import { FileDown, Lock, Phone, UserRound } from "lucide-react";
+import { FileDown, Phone, UserRound } from "lucide-react";
 import { Hero3DIntro } from "@/components/Hero3DIntro";
 import { LeadCaptureModal } from "@/components/LeadCaptureModal";
 import { ProductCatalog } from "@/components/ProductCatalog";
@@ -11,15 +11,15 @@ import { ProductSheet } from "@/components/ProductSheet";
 import { ProductTheater } from "@/components/ProductTheater";
 import { StandGuide } from "@/components/StandGuide";
 import { StandTracker, recordStandEvent } from "@/components/StandTracker";
-import { PRODUCTS, getProductById, type Product } from "@/data/products";
-import { downloadProductDatasheets } from "@/lib/datasheet-pdf";
+import { getProductById, type Product } from "@/data/products";
+import { downloadMikaZoneCatalog } from "@/lib/catalog";
 import {
   COMPANY_NAME,
   PARTNER_NAME,
   STAND_PHONE_DISPLAY,
-  STAND_PHONE_SHORT,
   STAND_TEL_HREF,
 } from "@/lib/contact";
+import { SACK_LINEUP } from "@/data/sacks";
 
 const MIKAZONE_LOGO =
   "https://res.cloudinary.com/dgphys1xd/image/upload/v1788991971/PHOTO-2026-09-07-18-40-08_zw0udk.jpg";
@@ -30,7 +30,7 @@ export default function Home() {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [registered, setRegistered] = useState(false);
-  const [hasViewed, setHasViewed] = useState(false);
+  const overlayOpen = Boolean(activeProduct) || modalOpen;
 
   function openRegister(productIds: string[] = []) {
     setActiveProduct(null);
@@ -40,7 +40,6 @@ export default function Home() {
   }
 
   function openProductSpecs(product: Product) {
-    setHasViewed(true);
     setActiveProduct(product);
     recordStandEvent("product_view", product.id);
   }
@@ -51,7 +50,7 @@ export default function Home() {
   }
 
   function downloadBrochure() {
-    downloadProductDatasheets(PRODUCTS);
+    downloadMikaZoneCatalog();
     recordStandEvent("brochure_download");
   }
 
@@ -72,24 +71,15 @@ export default function Home() {
           className="hero-mesh pointer-events-none absolute inset-0 opacity-70"
         />
 
-        <div className="relative mx-auto w-full max-w-3xl px-4 py-2.5 sm:px-6 sm:py-5 lg:max-w-5xl lg:px-8">
-          <div className="flex items-center justify-between gap-3">
-            <Image
-              src={MIKAZONE_LOGO}
-              alt={`${PARTNER_NAME} — ${COMPANY_NAME}`}
-              width={320}
-              height={107}
-              priority
-              className="h-10 w-auto max-w-[min(58%,180px)] object-contain object-left sm:h-14 sm:max-w-[240px]"
-            />
-            <a
-              href={STAND_TEL_HREF}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 transition hover:text-mika sm:text-sm"
-            >
-              <Phone className="size-3.5" />
-              {STAND_PHONE_SHORT}
-            </a>
-          </div>
+        <div className="relative mx-auto flex w-full max-w-3xl justify-center px-4 py-3 sm:px-6 sm:py-5 lg:max-w-5xl lg:px-8">
+          <Image
+            src={MIKAZONE_LOGO}
+            alt={`${PARTNER_NAME} — ${COMPANY_NAME}`}
+            width={420}
+            height={140}
+            priority
+            className="h-14 w-auto max-w-[min(78%,280px)] object-contain sm:h-[4.5rem] sm:max-w-[320px]"
+          />
         </div>
 
         <div className="sticky top-0 z-30 hidden border-b border-slate-200/80 bg-white/90 px-4 py-2 backdrop-blur-md sm:block sm:px-6 lg:px-8">
@@ -102,21 +92,17 @@ export default function Home() {
           <p className="text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-mika sm:text-xs">
             BuildExpo South Florida · Sep 30 – Oct 1
           </p>
-          <p className="mt-1.5 text-center text-[13px] font-semibold leading-5 text-slate-700 sm:text-base">
-            {COMPANY_NAME}
-          </p>
-          <h1 className="mt-1 text-center text-[1.55rem] font-semibold leading-[1.12] tracking-tight text-slate-900 sm:text-5xl">
-            Official {PARTNER_NAME} partner.
+          <h1 className="mt-2 text-center text-[1.55rem] font-semibold leading-[1.12] tracking-tight text-slate-900 sm:text-5xl">
+            Cellulose ethers for U.S. plants.
           </h1>
           <p className="mx-auto mt-2 max-w-md text-center text-[13px] leading-5 text-slate-600 sm:mt-3 sm:text-base sm:leading-6">
-            Tap a bag for specs. Brochure is free. Register if you want a quote
-            after the show.
+            {COMPANY_NAME} is the official {PARTNER_NAME} partner.
+            Tap a bag for the grade — the catalog is free.
           </p>
 
           <div className="mt-4 flex flex-1 flex-col justify-end sm:mt-10 sm:justify-center">
             <ProductTheater
               onSelectProduct={openProductById}
-              coach={!hasViewed}
               dormant={showIntro}
             />
           </div>
@@ -125,18 +111,18 @@ export default function Home() {
             <button
               type="button"
               onClick={downloadBrochure}
-              className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-slate-900 bg-white px-6 text-sm font-bold text-slate-900"
+              className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-6 text-sm font-bold text-slate-900"
             >
               <FileDown className="size-5 shrink-0" />
-              Download brochure
+              Download catalog
             </button>
             <button
               type="button"
               onClick={() => openRegister()}
-              className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 text-sm font-bold text-white shadow-[0_10px_24px_-10px_rgba(5,150,105,0.9)]"
+              className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 text-sm font-bold text-white"
             >
               <UserRound className="size-5 shrink-0" />
-              {registered ? "You’re registered" : "Register for follow-up"}
+              {registered ? "You’re registered" : "Request a quote"}
             </button>
           </div>
         </div>
@@ -159,36 +145,40 @@ export default function Home() {
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">
             Name, company, phone, email, and the grades you liked. We follow up
-            commercially. The brochure stays free.
+            commercially. The catalog stays free.
           </p>
           <button
             type="button"
             onClick={() => openRegister()}
-            className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-bold text-white shadow-[0_10px_24px_-10px_rgba(5,150,105,0.9)]"
+            className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-bold text-white"
           >
             <UserRound className="size-4" />
-            {registered ? "Update my details" : "Register for follow-up"}
+            {registered ? "Update my details" : "Register at the stand"}
           </button>
         </div>
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/96 px-4 pt-2.5 pb-[max(0.7rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:hidden">
+      <div
+        className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/96 px-4 pt-2.5 pb-[max(0.7rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:hidden ${
+          overlayOpen ? "hidden" : ""
+        }`}
+      >
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={downloadBrochure}
-            className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border-2 border-slate-900 bg-white px-3 text-[13px] font-bold text-slate-900"
+            className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border border-slate-300 bg-white px-3 text-[13px] font-bold text-slate-900"
           >
             <FileDown className="size-4 shrink-0" />
-            Brochure
+            Catalog
           </button>
           <button
             type="button"
             onClick={() => openRegister()}
-            className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 px-3 text-[13px] font-bold text-white shadow-[0_8px_18px_-8px_rgba(5,150,105,0.95)]"
+            className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 px-3 text-[13px] font-bold text-white"
           >
             <UserRound className="size-4 shrink-0" />
-            Register
+            Quote
           </button>
         </div>
       </div>
@@ -209,18 +199,10 @@ export default function Home() {
       />
 
       <footer className="mt-auto w-full bg-slate-900 pb-[calc(5.75rem+env(safe-area-inset-bottom))] sm:pb-0">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <p className="text-xs text-white/35">
             {COMPANY_NAME} · Official {PARTNER_NAME} partner
           </p>
-          <a
-            href="/admin/leads"
-            className="inline-flex size-9 items-center justify-center text-white/25 transition hover:text-mika"
-            aria-label="Stand team — prospect dashboard"
-            title="Stand team"
-          >
-            <Lock className="size-4" />
-          </a>
         </div>
       </footer>
     </div>
@@ -229,44 +211,67 @@ export default function Home() {
 
 function AboutSection() {
   return (
-    <section id="about" className="bg-white px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
-          Who we are
-        </p>
-        <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
-          {COMPANY_NAME}
-        </h2>
-        <p className="mt-3 text-[15px] leading-7 text-slate-600">
-          Official {PARTNER_NAME} partner for the U.S. market. Cellulose ethers,
-          redispersible powders, and construction additives — factory-direct,
-          with technical support at this stand.
-        </p>
-        <dl className="mt-6 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Event
-            </dt>
-            <dd className="mt-1 text-sm font-semibold text-slate-900">
-              BuildExpo South Florida 2026
-            </dd>
-            <dd className="text-sm text-slate-500">Sep 30 – Oct 1 · Broward County</dd>
+    <section id="about" className="bg-sand px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
+            Who we are
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+            {COMPANY_NAME}
+          </h2>
+          <p className="mt-4 text-[15px] leading-7 text-slate-600 sm:text-base">
+            Official {PARTNER_NAME} partner. We bring MikaZone cellulose ethers,
+            redispersible powders, and construction additives to U.S. dry-mix
+            plants, coatings formulators, and concrete producers — factory-direct,
+            with technical support at this stand.
+          </p>
+          <dl className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="border-t border-slate-300/80 pt-4">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                At BuildExpo
+              </dt>
+              <dd className="mt-1.5 text-sm font-semibold text-slate-900">
+                South Florida · Sep 30 – Oct 1
+              </dd>
+            </div>
+            <div className="border-t border-slate-300/80 pt-4">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Stand line
+              </dt>
+              <dd className="mt-1.5">
+                <a
+                  href={STAND_TEL_HREF}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900"
+                >
+                  <Phone className="size-3.5 text-mika" />
+                  {STAND_PHONE_DISPLAY}
+                </a>
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div className="relative">
+          <div
+            className="pointer-events-none absolute inset-x-8 bottom-6 h-16 rounded-[100%] bg-slate-900/10 blur-3xl"
+            aria-hidden="true"
+          />
+          <div className="relative grid grid-cols-3 items-end gap-2 rounded-[28px] bg-white px-4 py-8 shadow-[0_30px_60px_-36px_rgba(15,23,42,0.35)] sm:px-8">
+            {SACK_LINEUP.map((sack) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={sack.productId}
+                src={sack.front}
+                alt={sack.shortName}
+                className="mx-auto h-auto max-h-44 w-full object-contain drop-shadow-[0_16px_20px_rgba(15,23,42,0.14)] sm:max-h-56"
+              />
+            ))}
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Stand line
-            </dt>
-            <dd className="mt-1">
-              <a
-                href={STAND_TEL_HREF}
-                className="text-sm font-semibold text-emerald-700"
-              >
-                {STAND_PHONE_DISPLAY}
-              </a>
-            </dd>
-            <dd className="text-sm text-slate-500">Call or text the booth</dd>
-          </div>
-        </dl>
+          <p className="mt-4 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            HPMC · HEC · RDP
+          </p>
+        </div>
       </div>
     </section>
   );
