@@ -49,9 +49,9 @@ export function PackShot({
     <>
       {lite ? null : (
         <span
-          className="sack-aura pointer-events-none absolute bottom-[4%] left-1/2 hidden h-10 w-[88%] rounded-[100%] blur-2xl sm:block"
+          className="sack-aura pointer-events-none absolute bottom-[5%] left-1/2 h-9 w-[82%] -translate-x-1/2 rounded-[100%] sm:h-10 sm:w-[88%] sm:blur-2xl"
           style={{
-            background: sack.accent,
+            background: `radial-gradient(ellipse at center, ${sack.accent} 0%, transparent 72%)`,
             animationDelay: `${index * 0.45}s`,
             animationPlayState: dimmed ? "paused" : "running",
           }}

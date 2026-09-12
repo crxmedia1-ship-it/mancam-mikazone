@@ -23,10 +23,10 @@ type IntroProfile = {
 
 const MOBILE_PROFILE: IntroProfile = {
   mobile: true,
-  introMs: 8400,
-  stampMs: 1600,
-  settleMs: 4600,
-  landMs: 6100,
+  introMs: 6700,
+  stampMs: 1200,
+  settleMs: 3200,
+  landMs: 4500,
 };
 
 const DESKTOP_PROFILE: IntroProfile = {
@@ -164,7 +164,7 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
         }}
         initial={{ opacity: 1 }}
         animate={{ opacity: landed ? 0 : 1 }}
-        transition={{ duration: profile.mobile ? 1.35 : 1.05, ease: EASE_SETTLE }}
+        transition={{ duration: profile.mobile ? 1.1 : 1.05, ease: EASE_SETTLE }}
       />
 
       <motion.div
@@ -178,7 +178,7 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
             : { opacity: 0, y: 14, scale: 1.04 }
         }
         transition={{
-          duration: stamped && !settling ? (profile.mobile ? 1.65 : 1.35) : 0.8,
+          duration: stamped && !settling ? (profile.mobile ? 1.25 : 1.35) : 0.75,
           ease: EASE_OUT,
         }}
       >
@@ -199,8 +199,8 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
             stamped && !settling ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }
           }
           transition={{
-            duration: profile.mobile ? 1.05 : 0.9,
-            delay: stamped ? 0.5 : 0,
+            duration: profile.mobile ? 0.85 : 0.9,
+            delay: stamped ? 0.35 : 0,
             ease: EASE_SETTLE,
           }}
         >
@@ -216,7 +216,7 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
           transition={
             settling
               ? profile.mobile
-                ? { duration: 1.85, ease: EASE_SETTLE }
+                ? { duration: 1.5, ease: EASE_SETTLE }
                 : { type: "spring", stiffness: 80, damping: 22, mass: 1.2 }
               : { duration: 0 }
           }
@@ -233,11 +233,11 @@ export function Hero3DIntro({ onComplete }: { onComplete: () => void }) {
                   profile.mobile
                     ? {
                         y: {
-                          delay: 0.14 + index * 0.2,
-                          duration: 1.65,
+                          delay: 0.1 + index * 0.14,
+                          duration: 1.35,
                           ease: EASE_OUT,
                         },
-                        opacity: { duration: 0.4, delay: 0.14 + index * 0.2 },
+                        opacity: { duration: 0.32, delay: 0.1 + index * 0.14 },
                       }
                     : {
                         y: {

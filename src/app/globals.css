@@ -235,6 +235,16 @@
   }
 }
 
+@keyframes sack-aura-mobile {
+  0%,
+  100% {
+    opacity: 0.34;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
 @keyframes sack-aura {
   0%,
   100% {
@@ -289,8 +299,12 @@
     animation-duration: 5.2s;
   }
 
-  .hero-mesh,
   .sack-aura {
+    animation-name: sack-aura-mobile;
+    animation-duration: 4.4s;
+  }
+
+  .hero-mesh {
     animation: none;
   }
 

@@ -2,15 +2,22 @@
 
 import { useEffect, useId, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { UserRound, X } from "lucide-react";
 import { PRODUCT_CATEGORIES, type Product } from "@/data/products";
 
 type ProductSheetProps = {
   product: Product | null;
+  registered?: boolean;
   onClose: () => void;
+  onRegister: (productId: string) => void;
 };
 
-export function ProductSheet({ product, onClose }: ProductSheetProps) {
+export function ProductSheet({
+  product,
+  registered = false,
+  onClose,
+  onRegister,
+}: ProductSheetProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -70,7 +77,7 @@ export function ProductSheet({ product, onClose }: ProductSheetProps) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 16, opacity: 0 }}
             transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 flex max-h-[86dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.45)] sm:max-h-[88vh] sm:rounded-[28px]"
+            className="relative z-10 flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.45)] sm:max-h-[88vh] sm:rounded-[28px]"
           >
             <div
               className="h-1 w-full"
@@ -104,7 +111,7 @@ export function ProductSheet({ product, onClose }: ProductSheetProps) {
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">
               {product.packFront ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -148,6 +155,24 @@ export function ProductSheet({ product, onClose }: ProductSheetProps) {
                   ))}
                 </ul>
               </div>
+            </div>
+
+            <div className="shrink-0 border-t border-slate-200/80 bg-white px-5 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+              <button
+                type="button"
+                onClick={() => onRegister(product.id)}
+                className="btn-shine btn-mika flex min-h-12 w-full flex-col items-center justify-center rounded-2xl px-4 text-white"
+              >
+                <span className="inline-flex items-center gap-2 text-[15px] font-bold">
+                  <UserRound className="size-4" />
+                  {registered ? "You’re registered" : "I’m interested"}
+                </span>
+                <span className="mt-0.5 text-[11px] font-medium tracking-wide text-white/80">
+                  {registered
+                    ? `${product.shortName} is on your list`
+                    : `${product.shortName} — we’ll quote after the show`}
+                </span>
+              </button>
             </div>
           </motion.div>
         </motion.div>

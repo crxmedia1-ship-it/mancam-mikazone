@@ -156,7 +156,9 @@ export default function Home() {
 
       <ProductSheet
         product={activeProduct}
+        registered={registered}
         onClose={() => setActiveProduct(null)}
+        onRegister={(productId) => openRegister([productId])}
       />
 
       <LeadCaptureModal
