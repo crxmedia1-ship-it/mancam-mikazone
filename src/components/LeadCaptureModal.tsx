@@ -3,27 +3,28 @@
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   useTransition,
   type FormEvent,
   type HTMLAttributes,
-  type ReactNode,
 } from "react";
 import {
-  Building2,
   Check,
+  CheckCircle2,
   LoaderCircle,
-  Mail,
-  Phone,
-  UserRound,
   WifiOff,
   X,
 } from "lucide-react";
 import { submitLead } from "@/app/actions/leads";
-import { PRODUCTS, type Product } from "@/data/products";
+import {
+  PRODUCTS,
+  PRODUCT_CATEGORIES,
+  PRODUCT_CATEGORY_IDS,
+  type Product,
+} from "@/data/products";
 import { leadSchema, type LeadInput } from "@/lib/lead";
-import confetti from "canvas-confetti";
 
 const PENDING_LEADS_KEY = "mancam-mikazone:pending-leads";
 
@@ -51,6 +52,12 @@ const emptyForm: FormState = {
   phone: "",
   productsOfInterest: [],
 };
+
+const productGroups = PRODUCT_CATEGORY_IDS.map((id) => ({
+  id,
+  label: PRODUCT_CATEGORIES[id].label,
+  products: PRODUCTS.filter((product) => product.category === id),
+})).filter((group) => group.products.length > 0);
 
 function readPendingLeads(): PendingLead[] {
   if (typeof window === "undefined") return [];
@@ -82,6 +89,64 @@ function firstError(
   return fieldErrors?.[key]?.[0];
 }
 
+function revealField(element: HTMLElement) {
+  window.setTimeout(() => {
+    element.scrollIntoView({ block: "center", inline: "nearest" });
+  }, 280);
+}
+
+function useViewportLock(active: boolean) {
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!active) return;
+
+    const shell = shellRef.current;
+    const visualViewport = window.visualViewport;
+    const html = document.documentElement;
+    const body = document.body;
+    const previous = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      htmlOverscroll: html.style.overscrollBehavior,
+      bodyOverscroll: body.style.overscrollBehavior,
+    };
+
+    const sync = () => {
+      if (!shell) return;
+      const height = Math.round(visualViewport?.height ?? window.innerHeight);
+      const offsetTop = Math.round(visualViewport?.offsetTop ?? 0);
+      shell.style.height = `${height}px`;
+      shell.style.top = `${offsetTop}px`;
+      shell.style.left = "0";
+      shell.style.right = "0";
+      shell.style.bottom = "auto";
+    };
+
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overscrollBehavior = "none";
+    sync();
+
+    visualViewport?.addEventListener("resize", sync);
+    visualViewport?.addEventListener("scroll", sync);
+    window.addEventListener("orientationchange", sync);
+
+    return () => {
+      html.style.overflow = previous.htmlOverflow;
+      body.style.overflow = previous.bodyOverflow;
+      html.style.overscrollBehavior = previous.htmlOverscroll;
+      body.style.overscrollBehavior = previous.bodyOverscroll;
+      visualViewport?.removeEventListener("resize", sync);
+      visualViewport?.removeEventListener("scroll", sync);
+      window.removeEventListener("orientationchange", sync);
+    };
+  }, [active]);
+
+  return shellRef;
+}
+
 export function LeadCaptureModal({
   open,
   initialProductIds = [],
@@ -89,7 +154,8 @@ export function LeadCaptureModal({
   onRegistered,
 }: LeadCaptureModalProps) {
   const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const shellRef = useViewportLock(open);
   const [form, setForm] = useState<FormState>(() => ({
     ...emptyForm,
     productsOfInterest: [...new Set(initialProductIds)],
@@ -100,27 +166,17 @@ export function LeadCaptureModal({
     "error",
   );
   const [isPending, startTransition] = useTransition();
+  const done = statusTone === "success" || statusTone === "offline";
 
   useEffect(() => {
     if (!open) return;
-
-    const previouslyFocused = document.activeElement;
-    dialogRef.current?.focus();
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
     }
 
     window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-      if (previouslyFocused instanceof HTMLElement) {
-        previouslyFocused.focus();
-      }
-    };
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
 
   useEffect(() => {
@@ -168,6 +224,8 @@ export function LeadCaptureModal({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (done || isPending) return;
+
     setStatusMessage(null);
 
     const parsed = leadSchema.safeParse(form);
@@ -181,6 +239,11 @@ export function LeadCaptureModal({
       setFieldErrors(nextErrors);
       setStatusTone("error");
       setStatusMessage("Please check the highlighted fields.");
+      const firstKey = String(parsed.error.issues[0]?.path[0] ?? "");
+      const target = formRef.current?.querySelector<HTMLElement>(
+        `[data-field="${firstKey}"]`,
+      );
+      if (target) revealField(target);
       return;
     }
 
@@ -190,16 +253,9 @@ export function LeadCaptureModal({
       if (result.ok) {
         setStatusTone("success");
         setStatusMessage(
-          "Thanks. Our team will follow up after the show with pricing and samples.",
+          "You’re on the list. Our team will follow up after BuildExpo with pricing and samples.",
         );
         onRegistered?.();
-        confetti({
-          particleCount: 56,
-          spread: 58,
-          origin: { y: 0.42 },
-          colors: ["#10B981", "#4DB8C9", "#C4A35A"],
-          scalar: 0.75,
-        });
         return;
       }
 
@@ -222,220 +278,298 @@ export function LeadCaptureModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6">
-      <button
-        type="button"
-        aria-label="Close registration"
-        className="absolute inset-0 bg-slate-900/55"
-        onClick={onClose}
-      />
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        className="sheet-enter relative z-10 flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.45)] sm:max-h-[88vh] sm:rounded-[28px]"
-      >
-        <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-mika">
-              30 seconds at the stand
+    <div
+      ref={shellRef}
+      className="lead-sheet lead-sheet-enter fixed inset-x-0 top-0 z-[80] flex h-[100dvh] flex-col bg-[#f4f1ea]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
+      <header className="relative shrink-0 border-b border-black/5 bg-white pt-[env(safe-area-inset-top)]">
+        <span className="absolute inset-x-0 top-0 h-1 bg-[#B22234]" aria-hidden />
+        <div className="mx-auto flex w-full max-w-lg items-start justify-between gap-4 px-5 pt-4 pb-3.5">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#B22234]">
+              BuildExpo follow-up
             </p>
             <h2
               id={titleId}
-              className="font-display mt-1 text-[1.7rem] leading-tight tracking-tight text-slate-900"
+              className="font-display mt-1 text-[1.65rem] leading-none tracking-tight text-navy"
             >
               Leave your details
             </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Name, company, phone, email, and the grades you want. We quote
-              after BuildExpo.
+            <p className="mt-1.5 text-[13px] leading-5 text-slate-500">
+              Four fields. Optional grades. We’ll quote after the show.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
+            className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600"
             aria-label="Close"
           >
             <X className="size-5" />
           </button>
         </div>
+      </header>
 
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <LabeledInput
-                label="Full name"
-                icon={<UserRound className="size-4" />}
-                autoComplete="name"
-                value={form.fullName}
-                error={firstError(fieldErrors, "fullName")}
-                onChange={(value) => updateField("fullName", value)}
-              />
-              <LabeledInput
-                label="Company"
-                icon={<Building2 className="size-4" />}
-                autoComplete="organization"
-                value={form.companyName}
-                error={firstError(fieldErrors, "companyName")}
-                onChange={(value) => updateField("companyName", value)}
-              />
-              <LabeledInput
-                label="Work email"
-                type="email"
-                icon={<Mail className="size-4" />}
-                autoComplete="email"
-                inputMode="email"
-                value={form.email}
-                error={firstError(fieldErrors, "email")}
-                onChange={(value) => updateField("email", value)}
-              />
-              <LabeledInput
-                label="Phone"
-                type="tel"
-                icon={<Phone className="size-4" />}
-                autoComplete="tel"
-                inputMode="tel"
-                value={form.phone}
-                error={firstError(fieldErrors, "phone")}
-                onChange={(value) => updateField("phone", value)}
-              />
-            </div>
-
-            <fieldset className="mt-7">
-              <legend className="text-sm font-semibold text-slate-900">
-                Grades of interest
-              </legend>
-              <p className="mt-1 text-xs text-slate-500">
-                Tap every grade you want quoted or sampled.
+      {done ? (
+        <SuccessState
+          offline={statusTone === "offline"}
+          message={statusMessage}
+          onClose={onClose}
+        />
+      ) : (
+        <form
+          ref={formRef}
+          noValidate
+          onSubmit={handleSubmit}
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <div className="mx-auto min-h-0 w-full max-w-lg flex-1 overflow-y-auto overscroll-contain px-4 py-5">
+            <section>
+              <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Your details
               </p>
-              <ProductChips
-                selectedIds={form.productsOfInterest}
-                onToggle={toggleProduct}
-              />
-              <FieldError message={firstError(fieldErrors, "productsOfInterest")} />
-            </fieldset>
+              <div className="overflow-hidden rounded-[22px] bg-white shadow-[0_1px_0_rgba(10,31,61,0.04)] ring-1 ring-black/5">
+                <NativeField
+                  label="Full name"
+                  name="name"
+                  autoComplete="name"
+                  autoCapitalize="words"
+                  enterKeyHint="next"
+                  value={form.fullName}
+                  error={firstError(fieldErrors, "fullName")}
+                  fieldKey="fullName"
+                  onChange={(value) => updateField("fullName", value)}
+                />
+                <NativeField
+                  label="Company"
+                  name="organization"
+                  autoComplete="organization"
+                  autoCapitalize="words"
+                  enterKeyHint="next"
+                  value={form.companyName}
+                  error={firstError(fieldErrors, "companyName")}
+                  fieldKey="companyName"
+                  onChange={(value) => updateField("companyName", value)}
+                />
+                <NativeField
+                  label="Work email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  inputMode="email"
+                  enterKeyHint="next"
+                  spellCheck={false}
+                  value={form.email}
+                  error={firstError(fieldErrors, "email")}
+                  fieldKey="email"
+                  onChange={(value) => updateField("email", value)}
+                />
+                <NativeField
+                  label="Phone"
+                  name="tel"
+                  type="tel"
+                  autoComplete="tel"
+                  autoCapitalize="none"
+                  inputMode="tel"
+                  enterKeyHint="done"
+                  spellCheck={false}
+                  last
+                  value={form.phone}
+                  error={firstError(fieldErrors, "phone")}
+                  fieldKey="phone"
+                  onChange={(value) => updateField("phone", value)}
+                />
+              </div>
+            </section>
+
+            <section className="mt-6">
+              <div className="mb-2 flex items-end justify-between gap-3 px-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Grades of interest
+                </p>
+                <p className="text-[11px] text-slate-400">Optional</p>
+              </div>
+              <div className="space-y-4 rounded-[22px] bg-white px-3.5 py-3.5 shadow-[0_1px_0_rgba(10,31,61,0.04)] ring-1 ring-black/5">
+                {productGroups.map((group) => (
+                  <div key={group.id}>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                      {group.label}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {group.products.map((product) => (
+                        <ProductChip
+                          key={product.id}
+                          product={product}
+                          selected={form.productsOfInterest.includes(product.id)}
+                          onToggle={toggleProduct}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
             {statusMessage ? (
-              <p
-                className={`mt-4 flex items-start gap-2 rounded-2xl px-3 py-2.5 text-sm ${
-                  statusTone === "success"
-                    ? "bg-emerald-50 text-emerald-800"
-                    : statusTone === "offline"
-                      ? "bg-amber-50 text-amber-900"
-                      : "bg-red-50 text-red-800"
-                }`}
-              >
-                {statusTone === "offline" ? (
-                  <WifiOff className="mt-0.5 size-4 shrink-0" />
-                ) : null}
+              <p className="mt-4 rounded-2xl bg-red-50 px-3.5 py-2.5 text-sm text-red-800">
                 {statusMessage}
               </p>
             ) : null}
           </div>
 
-          <div className="border-t border-slate-100 bg-white px-5 pt-4 pb-[max(1.1rem,env(safe-area-inset-bottom))]">
+          <div className="shrink-0 border-t border-black/5 bg-white px-4 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
             <button
               type="submit"
-              disabled={isPending || statusTone === "success"}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-base font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+              disabled={isPending}
+              className="mx-auto flex h-[52px] w-full max-w-lg items-center justify-center gap-2 rounded-2xl bg-navy text-[16px] font-semibold text-white shadow-[0_10px_24px_-16px_rgba(10,31,61,0.9)] disabled:opacity-60"
             >
               {isPending ? (
                 <LoaderCircle className="size-5 animate-spin" />
-              ) : (
-                <UserRound className="size-5" />
-              )}
-              {isPending
-                ? "Saving…"
-                : statusTone === "success"
-                  ? "Registered"
-                  : "Leave my details"}
+              ) : null}
+              {isPending ? "Saving…" : "Send details"}
             </button>
           </div>
         </form>
+      )}
+    </div>
+  );
+}
+
+function SuccessState({
+  offline,
+  message,
+  onClose,
+}: {
+  offline: boolean;
+  message: string | null;
+  onClose: () => void;
+}) {
+  return (
+    <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-6">
+      <div className="flex flex-1 flex-col items-center justify-center text-center">
+        <span
+          className={`flex size-16 items-center justify-center rounded-full ${
+            offline ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"
+          }`}
+        >
+          {offline ? (
+            <WifiOff className="size-7" />
+          ) : (
+            <CheckCircle2 className="size-7" />
+          )}
+        </span>
+        <h3 className="font-display mt-5 text-3xl tracking-tight text-navy">
+          {offline ? "Saved on this phone" : "Details received"}
+        </h3>
+        <p className="mt-3 max-w-sm text-[15px] leading-6 text-slate-600">
+          {message}
+        </p>
+      </div>
+      <div className="shrink-0 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-[52px] w-full items-center justify-center rounded-2xl bg-navy text-[16px] font-semibold text-white"
+        >
+          Done
+        </button>
       </div>
     </div>
   );
 }
 
-function ProductChips({
-  selectedIds,
+function ProductChip({
+  product,
+  selected,
   onToggle,
 }: {
-  selectedIds: readonly string[];
+  product: Product;
+  selected: boolean;
   onToggle: (productId: string) => void;
 }) {
   return (
-    <div className="mt-3 grid grid-cols-2 gap-2">
-      {PRODUCTS.map((product: Product) => {
-        const selected = selectedIds.includes(product.id);
-        return (
-          <button
-            key={product.id}
-            type="button"
-            onClick={() => onToggle(product.id)}
-            aria-pressed={selected}
-            className={`min-h-11 rounded-2xl border px-3 py-2.5 text-left text-[13px] font-semibold transition ${
-              selected
-                ? "border-slate-900 bg-slate-900 text-white"
-                : "border-slate-200 bg-slate-50 text-slate-900"
-            }`}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              {selected ? <Check className="size-3.5" /> : null}
-              {product.shortName}
-            </span>
-          </button>
-        );
-      })}
-    </div>
+    <button
+      type="button"
+      onClick={() => onToggle(product.id)}
+      aria-pressed={selected}
+      className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-semibold transition ${
+        selected
+          ? "border-navy bg-navy text-white"
+          : "border-slate-200 bg-slate-50 text-slate-800"
+      }`}
+    >
+      {selected ? <Check className="size-3.5" /> : null}
+      {product.shortName}
+    </button>
   );
 }
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="mt-1.5 text-xs text-red-700">{message}</p>;
+  return <p className="px-4 pb-2 text-[12px] text-red-700">{message}</p>;
 }
 
-function LabeledInput({
+function NativeField({
   label,
   value,
   onChange,
   error,
-  icon,
+  fieldKey,
+  last = false,
   type = "text",
+  name,
   autoComplete,
+  autoCapitalize,
   inputMode,
+  enterKeyHint,
+  spellCheck,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   error?: string;
-  icon: ReactNode;
+  fieldKey: string;
+  last?: boolean;
   type?: string;
+  name?: string;
   autoComplete?: string;
+  autoCapitalize?: HTMLAttributes<HTMLInputElement>["autoCapitalize"];
   inputMode?: HTMLAttributes<HTMLInputElement>["inputMode"];
+  enterKeyHint?: HTMLAttributes<HTMLInputElement>["enterKeyHint"];
+  spellCheck?: boolean;
 }) {
   const inputId = useId();
 
   return (
-    <label htmlFor={inputId} className="block text-[13px] font-semibold text-slate-900">
-      {label}
-      <span className="mt-1.5 flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3.5 focus-within:border-slate-900 focus-within:bg-white">
-        <span className="text-slate-400">{icon}</span>
+    <div
+      data-field={fieldKey}
+      className={last ? "" : "border-b border-slate-100"}
+    >
+      <label htmlFor={inputId} className="block px-4 pt-3 pb-2">
+        <span className="block text-[12px] font-semibold text-slate-500">
+          {label}
+        </span>
         <input
           id={inputId}
+          name={name}
           type={type}
           value={value}
           autoComplete={autoComplete}
+          autoCapitalize={autoCapitalize}
+          autoCorrect="off"
           inputMode={inputMode}
+          enterKeyHint={enterKeyHint}
+          spellCheck={spellCheck}
           onChange={(event) => onChange(event.target.value)}
-          className="h-13 min-h-12 w-full bg-transparent text-[15px] text-slate-900 outline-none"
+          onFocus={(event) => revealField(event.currentTarget)}
+          className="mt-0.5 h-11 w-full bg-transparent text-[16px] tracking-tight text-navy outline-none placeholder:text-slate-300"
         />
-      </span>
+      </label>
       <FieldError message={error} />
-    </label>
+    </div>
   );
 }

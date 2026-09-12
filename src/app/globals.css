@@ -109,6 +109,24 @@
   animation: sheet-up 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+@keyframes lead-sheet-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lead-sheet {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lead-sheet-enter {
+  animation: lead-sheet-in 0.22s ease-out both;
+}
+
 .font-display {
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
 }
@@ -161,6 +179,7 @@
   .hero-mesh,
   .usa-flag-wash::before,
   .sheet-enter,
+  .lead-sheet-enter,
   .sack-idle,
   .sack-aura {
     animation: none;

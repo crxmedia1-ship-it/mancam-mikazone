@@ -79,10 +79,11 @@ export const leadSchema = z.object({
     .trim()
     .min(7, "Enter a phone number")
     .max(40)
-    .regex(/^[+\d][\d\s().-]{6,}$/u, "Enter a valid phone number"),
-  productsOfInterest: z
-    .array(z.enum(productIds))
-    .min(1, "Select at least one product"),
+    .refine(
+      (value) => value.replace(/\D/g, "").length >= 7,
+      "Enter a valid phone number",
+    ),
+  productsOfInterest: z.array(z.enum(productIds)).default([]),
   profileType: z.enum(PROFILE_TYPES).default("other"),
   purchaseVolume: z.enum(PURCHASE_VOLUMES).default("sample"),
   primaryApplication: z.enum(PRIMARY_APPLICATIONS).default("other"),

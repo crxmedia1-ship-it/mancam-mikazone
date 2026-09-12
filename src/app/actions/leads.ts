@@ -47,14 +47,13 @@ export async function submitLead(input: LeadInput): Promise<SubmitLeadResult> {
     const { error } = await supabase.from("leads").insert({
       full_name: lead.fullName,
       company_name: lead.companyName,
-      email: lead.email,
-      phone: lead.phone,
+      email: lead.email.toLowerCase(),
+      phone: lead.phone.replace(/\s+/g, " ").trim(),
       profile_type: lead.profileType,
       products_of_interest: lead.productsOfInterest,
       purchase_volume: lead.purchaseVolume,
       primary_application: lead.primaryApplication,
       source: "qr-stand",
-      event_pin: process.env.NEXT_PUBLIC_EVENT_PIN ?? null,
     });
 
     if (error) {
