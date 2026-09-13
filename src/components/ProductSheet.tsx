@@ -77,7 +77,7 @@ export function ProductSheet({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 16, opacity: 0 }}
             transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.45)] sm:max-h-[88vh] sm:rounded-[28px]"
+            className="relative z-10 flex h-[min(92svh,92dvh)] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.45)] sm:h-auto sm:max-h-[min(88vh,44rem)] sm:rounded-[28px]"
           >
             <div
               className="h-1 w-full"
@@ -111,7 +111,7 @@ export function ProductSheet({
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4 sm:max-h-[min(58vh,32rem)]">
               {product.packFront ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -157,11 +157,11 @@ export function ProductSheet({
               </div>
             </div>
 
-            <div className="shrink-0 border-t border-slate-200/80 bg-white px-5 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+            <div className="shrink-0 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(0.9rem,env(safe-area-inset-bottom))] sm:px-5">
               <button
                 type="button"
                 onClick={() => onRegister(product.id)}
-                className="btn-shine btn-mika flex min-h-12 w-full flex-col items-center justify-center rounded-2xl px-4 text-white"
+                className="btn-shine btn-mika flex min-h-[3.35rem] w-full flex-col items-center justify-center rounded-2xl px-4 text-white"
               >
                 <span className="inline-flex items-center gap-2 text-[15px] font-bold">
                   <UserRound className="size-4" />
