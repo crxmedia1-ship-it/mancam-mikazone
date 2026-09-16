@@ -24,7 +24,7 @@
 - `NEXT_PUBLIC_EVENT_PIN`: `2026`
 
 ## 4. Arquitectura de Módulos Implementados
-- `src/data/products.ts`: Catálogo técnico tipado con los 10 productos MikaZone (Cellulose Ethers HPMC/MHEC, HEC, VAE RPP, Starch Ether HPS, PCE Superplasticizer, Silicone SHP, Gypsum Retarder, Rheology Modifier S400 / Powder Defoamer, Calcium Formate y Fibras Sintéticas).
+- `src/data/products.ts`: Catálogo técnico tipado con los 10 productos MikaZone (Cellulose Ethers HPMC/MHEC, HEC, VAE RDP, Starch Ether HPS, PCE Superplasticizer, Silicone SHP, Gypsum Retarder, Rheology Modifier S400 / Powder Defoamer, Calcium Formate y Fibras Sintéticas).
 - `src/app/actions/leads.ts`: Server Action para validación de formularios con Zod e inserción segura en Supabase.
 - `src/components/LeadCaptureModal.tsx`: Modal de captura comercial con soporte de persistencia local (localStorage) ante fallos de red en la expo y trigger de descarga del PDF técnico.
 - `src/components/ProductCatalog.tsx`: Catálogo interactivo con filtrado estricto por industria (Morteros, Recubrimientos, Concreto, Especialidades).

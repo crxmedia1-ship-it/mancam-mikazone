@@ -40,14 +40,24 @@ export function ProductCatalog({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl xl:max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-mika">
-              Full lineup
+              Our product line
             </p>
             <h2 className="font-display mt-2 text-[1.85rem] leading-[1.08] tracking-tight text-slate-900 sm:text-4xl xl:text-5xl">
-              Ten grades. One catalog.
+              Explore Our Featured Products
             </h2>
             <p className="mt-2 text-[14px] leading-6 text-slate-600 sm:text-[15px]">
-              Open a card for the specs. Download the full catalog or leave
-              your details above.
+              Browse a selection of our high-performance construction additives.
+              For our full product portfolio, visit{" "}
+              <a
+                href="https://www.mikazone.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-mika underline-offset-2 hover:underline"
+                onClick={(event) => event.stopPropagation()}
+              >
+                Mikazone.com
+              </a>
+              .
             </p>
           </div>
           <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:min-w-[18rem]">

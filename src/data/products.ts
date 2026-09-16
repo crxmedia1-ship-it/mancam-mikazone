@@ -100,7 +100,7 @@ export const PRODUCTS: readonly Product[] = [
     chemicalName:
       "Hydroxypropyl Methylcellulose (HPMC) — Grade MK 200P, high water retention and open time",
     summary:
-      "High water retention and open time for dry-mix mortars. Pair with VAE RPP 3510 for C2 adhesives, putties, and EIFS.",
+      "High water retention and open time for dry-mix mortars. Pair with VAE RDP 3510 for C2 adhesives, putties, and EIFS.",
     category: "mortars",
     applications: [
       "C2 tile adhesives and large-format thin-set",
@@ -146,7 +146,7 @@ export const PRODUCTS: readonly Product[] = [
     slug: "vae-redispersible-polymer-powder",
     sku: "MK 3510",
     name: "MIKA VAE Redispersible Polymer Powder (Grade 3510)",
-    shortName: "VAE RPP 3510",
+    shortName: "VAE RDP 3510",
     brand: "MikaVAE",
     chemicalName:
       "Vinyl acetate–ethylene copolymer redispersible polymer powder — Grade 3510, premium flexibility and adhesion",

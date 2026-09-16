@@ -21,7 +21,7 @@ const fraunces = Fraunces({
 const SITE_TITLE =
   "MikaZone USA • High-Performance Construction Additives | Mancam Global Supply";
 const SITE_DESCRIPTION =
-  "Direct factory supply of HPMC, VAE RPP, Defoamers, and construction chemicals for dry-mix mortars and coatings.";
+  "Direct factory supply of HPMC, VAE RDP, Defoamers, and construction chemicals for dry-mix mortars and coatings.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

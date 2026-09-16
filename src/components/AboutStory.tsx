@@ -32,7 +32,7 @@ const LINES = [
   {
     kicker: "Mortars",
     title: "Cellulose ethers & VAE",
-    body: "HPMC MK 200P for water retention, open time, and sag resistance in C2 adhesives, putties, plasters, and EIFS. VAE RPP 3510 for flexible adhesion, crack bridging, and freeze–thaw.",
+    body: "HPMC MK 200P for water retention, open time, and sag resistance in C2 adhesives, putties, plasters, and EIFS. VAE RDP 3510 for flexible adhesion, crack bridging, and freeze–thaw.",
   },
   {
     kicker: "Coatings",
