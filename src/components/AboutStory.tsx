@@ -136,13 +136,14 @@ export function AboutStory({
           Who we are
         </p>
         <h2 className="font-display mt-3 text-[2.15rem] leading-[1.08] tracking-tight text-navy [overflow-wrap:anywhere] sm:text-6xl sm:leading-[0.96]">
-          Building better solutions together.
+          Building Better Solutions Together
         </h2>
         <p className="mt-5 max-w-2xl text-[16px] leading-8 text-slate-600 sm:mt-6 sm:text-[18px] sm:leading-9">
-          {COMPANY_NAME} is the official {PARTNER_NAME} partner. MikaZone
-          researches, produces, and supplies construction additives — cellulose
-          ethers, redispersible powders, PCE, and specialties — for dry-mix,
-          coatings, and concrete plants.
+          Mancam Global Supply LLC is the official Mikazone USA partner.
+          Mikazone develops, manufactures, and supplies high-performance
+          construction additives, including cellulose ethers, redispersible
+          polymer powders, PCE superplasticizers, and specialty additives for
+          dry-mix mortars, coatings, and concrete applications.
         </p>
       </header>
 
