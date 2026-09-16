@@ -12,7 +12,10 @@
 - **Estilos & UI:** Tailwind CSS (diseño industrial de alto contraste, fondo blanco corporativo y acentos esmeralda MikaZone).
 - **Base de Datos & Backend:** Supabase PostgreSQL con RLS (Row Level Security) y Realtime habilitado.
 - **Control de Versiones:** GitHub (`cremediat-ship-it/mancam-mikazone`).
-- **Despliegue & Hosting:** Vercel en producción (`mancam-mikazone.vercel.app`).
+- **Despliegue & Hosting:** Vercel en producción.
+  - **Dominio canónico:** `https://www.mancamglobalsupply.com`
+  - **Apex:** `https://mancamglobalsupply.com` redirige **308** a `https://www.mancamglobalsupply.com/`.
+  - **DNS:** registro activo en Cloudflare (`yoxall.ns.cloudflare.com`, `shaz.ns.cloudflare.com`) y en Vercel (`www` CNAME a `*.vercel-dns-017.com`; apex con A records de Vercel). Verificado el 16 sep 2026.
 - **Librerías Clave:** `@supabase/supabase-js`, `zod`, `xlsx`, `lucide-react`.
 
 ## 3. Variables de Entorno (.env.local y Vercel)

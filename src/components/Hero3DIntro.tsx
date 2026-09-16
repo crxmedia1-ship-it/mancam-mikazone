@@ -4,9 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { PackShot } from "@/components/PackShot";
 import { SACK_IMAGE_SRC, SACK_LINEUP } from "@/data/sacks";
-
-const LOGO_SRC =
-  "https://res.cloudinary.com/dgphys1xd/image/upload/v1788992084/Photoroom_20260909_181404_r3umw2.png";
+import { LOGO_SRC } from "@/lib/contact";
 
 const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const EASE_SETTLE: [number, number, number, number] = [0.22, 1, 0.36, 1];

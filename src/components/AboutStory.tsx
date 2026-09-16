@@ -2,13 +2,11 @@ import Image from "next/image";
 import { FileDown, Phone, UserRound } from "lucide-react";
 import {
   COMPANY_NAME,
+  LOGO_SRC,
   PARTNER_NAME,
   STAND_PHONE_DISPLAY,
-  STAND_TEL_HREF,
+  WHATSAPP_HREF,
 } from "@/lib/contact";
-
-const MIKAZONE_LOGO =
-  "https://res.cloudinary.com/dgphys1xd/image/upload/v1788991971/PHOTO-2026-09-07-18-40-08_zw0udk.jpg";
 
 const USES = [
   "Tile adhesives",
@@ -288,7 +286,7 @@ export function AboutStory({
           />
 
           <Image
-            src={MIKAZONE_LOGO}
+            src={LOGO_SRC}
             alt={`${PARTNER_NAME} — ${COMPANY_NAME}`}
             width={280}
             height={90}
@@ -306,11 +304,13 @@ export function AboutStory({
           </p>
 
           <a
-            href={STAND_TEL_HREF}
+            href={WHATSAPP_HREF}
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-5 flex flex-col items-center rounded-2xl bg-white/55 py-3 ring-1 ring-white/80"
           >
             <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              Stand line
+              WhatsApp stand
             </span>
             <span className="mt-1 inline-flex items-center gap-2 text-[1.15rem] font-semibold tracking-tight text-navy">
               <Phone className="size-4 text-sky" />

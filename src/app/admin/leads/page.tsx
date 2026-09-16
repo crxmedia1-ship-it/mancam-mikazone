@@ -40,10 +40,10 @@ import {
   type StandStats,
 } from "@/lib/events";
 
+import { LOGO_SRC } from "@/lib/contact";
+
 const ADMIN_UNLOCK_KEY = "mancam-mikazone:admin-unlocked";
 const EVENT_PIN = process.env.NEXT_PUBLIC_EVENT_PIN?.trim() || "2026";
-const MIKAZONE_LOGO =
-  "https://res.cloudinary.com/dgphys1xd/image/upload/v1788991971/PHOTO-2026-09-07-18-40-08_zw0udk.jpg";
 
 const unlockListeners = new Set<() => void>();
 let memoryUnlocked = false;
@@ -238,7 +238,7 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
     <div className="flex min-h-dvh flex-col bg-sand px-4 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center">
         <Image
-          src={MIKAZONE_LOGO}
+          src={LOGO_SRC}
           alt="MikaZone USA"
           width={280}
           height={90}
@@ -525,7 +525,7 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:py-4">
           <div className="flex items-center gap-3">
             <Image
-              src={MIKAZONE_LOGO}
+              src={LOGO_SRC}
               alt="MikaZone USA"
               width={180}
               height={60}

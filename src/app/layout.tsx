@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
+import { SITE_URL } from "@/lib/contact";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,10 +18,31 @@ const fraunces = Fraunces({
   subsets: ["latin"],
 });
 
+const SITE_TITLE =
+  "MikaZone USA • High-Performance Construction Additives | Mancam Global Supply";
+const SITE_DESCRIPTION =
+  "Direct factory supply of HPMC, VAE RPP, Defoamers, and construction chemicals for dry-mix mortars and coatings.";
+
 export const metadata: Metadata = {
-  title: "MikaZone Official Technical Portal | BuildExpo South Florida 2026",
-  description:
-    "Register at the Mancam / MikaZone stand to download the full construction-chemical technical dossier at BuildExpo South Florida 2026.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Mancam Global Supply",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {
