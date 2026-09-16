@@ -40,17 +40,6 @@ export function ProductSheet({
     };
   }, [product, onClose]);
 
-  const specRows = product
-    ? [
-        { label: "Dosage", value: product.recommendedDosage },
-        { label: "Pack", value: product.packaging.primary },
-        { label: "Appearance", value: product.specifications.appearance },
-        product.specifications.viscosity
-          ? { label: "Viscosity", value: product.specifications.viscosity }
-          : null,
-      ].filter((row): row is { label: string; value: string } => Boolean(row))
-    : [];
-
   return (
     <AnimatePresence>
       {product ? (
@@ -125,30 +114,17 @@ export function ProductSheet({
                 />
               ) : null}
 
-              <p className="text-[15px] leading-6 text-slate-600">{product.summary}</p>
-
-              <dl className="mt-5 divide-y divide-slate-200 border-y border-slate-200">
-                {specRows.map((row) => (
-                  <div
-                    key={row.label}
-                    className="grid grid-cols-[5.5rem_1fr] gap-3 py-3"
-                  >
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                      {row.label}
-                    </dt>
-                    <dd className="text-[13px] leading-5 font-medium text-slate-900">
-                      {row.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Overview
+              </p>
+              <p className="mt-2 text-[15px] leading-6 text-slate-600">{product.summary}</p>
 
               <div className="mt-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                  Why plants specify it
+                  Key benefits
                 </p>
                 <ul className="mt-3 space-y-2.5 text-[14px] leading-5 text-slate-700">
-                  {product.benefits.slice(0, 4).map((benefit) => (
+                  {product.benefits.map((benefit) => (
                     <li key={benefit} className="flex gap-3">
                       <span
                         className="mt-2 size-1.5 shrink-0 rounded-full"
@@ -159,6 +135,19 @@ export function ProductSheet({
                   ))}
                 </ul>
               </div>
+
+              <div className="mt-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  Typical applications
+                </p>
+                <p className="mt-2 text-[14px] leading-6 text-slate-700">
+                  {product.applications.join(" | ")}
+                </p>
+              </div>
+
+              <p className="mt-5 text-[13px] leading-5 text-slate-500">
+                See Technical Catalog for full specifications.
+              </p>
             </div>
 
             <div className="shrink-0 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(0.9rem,env(safe-area-inset-bottom))] sm:px-5">
