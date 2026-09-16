@@ -19,9 +19,9 @@
 - **Librerías Clave:** `@supabase/supabase-js`, `zod`, `xlsx`, `lucide-react`.
 
 ## 3. Variables de Entorno (.env.local y Vercel)
-- `NEXT_PUBLIC_SUPABASE_URL`: `https://rbctsleplxtqypqngvvn.supabase.co`
+- `NEXT_PUBLIC_SUPABASE_URL`: `https://hzwwhutthihjdgwfovbv.supabase.co`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Configurado (clave JWT anónima de Supabase).
-- `NEXT_PUBLIC_EVENT_PIN`: `2026`
+- `NEXT_PUBLIC_EVENT_PIN`: `0237`
 
 ## 4. Arquitectura de Módulos Implementados
 - `src/data/products.ts`: Catálogo técnico tipado con los 10 productos MikaZone (Cellulose Ethers HPMC/MHEC, HEC, VAE RDP, Starch Ether HPS, PCE Superplasticizer, Silicone SHP, Gypsum Retarder, Rheology Modifier S400 / Powder Defoamer, Calcium Formate y Fibras Sintéticas).
@@ -29,7 +29,7 @@
 - `src/components/LeadCaptureModal.tsx`: Modal de captura comercial con soporte de persistencia local (localStorage) ante fallos de red en la expo y trigger de descarga del PDF técnico.
 - `src/components/ProductCatalog.tsx`: Catálogo interactivo con filtrado estricto por industria (Morteros, Recubrimientos, Concreto, Especialidades).
 - `src/app/page.tsx`: Landing page principal con Hero industrial, CTA primario de alta conversión ("DOWNLOAD TECHNICAL DOSSIER & PRICING") y acceso seguro al panel comercial.
-- `src/app/admin/leads/page.tsx`: Panel comercial con autenticación por PIN (`2026`), tabla reactiva de prospectos, calificación por estrellas (1 a 5) y exportador nativo `.xlsx`.
+- `src/app/admin/leads/page.tsx`: Panel comercial con autenticación por PIN (`0237`), tabla reactiva de prospectos, calificación por estrellas (1 a 5) y exportador nativo `.xlsx`.
 
 ## 5. Próximos Pasos & Roadmap
 1. **Animación Cinemática 3D de Entrada:** Implementar componente Three.js / Framer Motion que simule la caída cinemática del saco de aditivo MikaZone y onda de choque al escanear el código QR.

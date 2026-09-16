@@ -9,6 +9,16 @@ export type AdminDashboardData = {
   events: StandEventRecord[];
 };
 
+function supabaseHost(): string {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!raw) return "unconfigured";
+  try {
+    return new URL(raw).host;
+  } catch {
+    return "invalid-url";
+  }
+}
+
 function publicError(error: unknown): string {
   const message =
     error instanceof Error
@@ -17,8 +27,12 @@ function publicError(error: unknown): string {
         ? error
         : "Could not load the stand panel.";
 
-  if (/load failed|failed to fetch|networkerror|fetch/i.test(message)) {
-    return "Could not reach the stand database. Tap Refresh.";
+  if (/environment variables are not configured/i.test(message)) {
+    return "Stand database is not configured on this deploy. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY on Vercel, then redeploy.";
+  }
+
+  if (/load failed|failed to fetch|networkerror|fetch|enotfound|could not resolve/i.test(message)) {
+    return `Could not reach the stand database (${supabaseHost()}). Tap Refresh.`;
   }
 
   return message.replace(/^TypeError:\s*/i, "");

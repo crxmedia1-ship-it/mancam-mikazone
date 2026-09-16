@@ -43,7 +43,7 @@ import {
 import { LOGO_SRC } from "@/lib/contact";
 
 const ADMIN_UNLOCK_KEY = "mancam-mikazone:admin-unlocked";
-const EVENT_PIN = process.env.NEXT_PUBLIC_EVENT_PIN?.trim() || "2026";
+const EVENT_PIN = process.env.NEXT_PUBLIC_EVENT_PIN?.trim() || "0237";
 
 const unlockListeners = new Set<() => void>();
 let memoryUnlocked = false;
