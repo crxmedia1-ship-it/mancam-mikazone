@@ -20,7 +20,15 @@ export type StandStats = {
   uniqueSessions: number;
   brochureDownloads: number;
   registerOpens: number;
+  productViewCount: number;
   productViews: ReadonlyArray<{ productId: string; count: number }>;
+};
+
+export type StandFunnelStep = {
+  key: "visits" | "product_details" | "form_opens" | "registrations";
+  label: string;
+  value: number;
+  shareOfVisits: number | null;
 };
 
 export function emptyStandStats(): StandStats {
@@ -29,8 +37,64 @@ export function emptyStandStats(): StandStats {
     uniqueSessions: 0,
     brochureDownloads: 0,
     registerOpens: 0,
+    productViewCount: 0,
     productViews: [],
   };
+}
+
+export function sharePercent(part: number, whole: number): number | null {
+  if (whole <= 0) return null;
+  return Math.round((part / whole) * 100);
+}
+
+export function standFunnel(
+  stats: StandStats,
+  registrations: number,
+): StandFunnelStep[] {
+  return [
+    {
+      key: "visits",
+      label: "QR visits",
+      value: stats.visits,
+      shareOfVisits: stats.visits > 0 ? 100 : null,
+    },
+    {
+      key: "product_details",
+      label: "Product details",
+      value: stats.productViewCount,
+      shareOfVisits: sharePercent(stats.productViewCount, stats.visits),
+    },
+    {
+      key: "form_opens",
+      label: "Form opens",
+      value: stats.registerOpens,
+      shareOfVisits: sharePercent(stats.registerOpens, stats.visits),
+    },
+    {
+      key: "registrations",
+      label: "Registrations",
+      value: registrations,
+      shareOfVisits: sharePercent(registrations, stats.visits),
+    },
+  ];
+}
+
+export function completeProductRanking(
+  productViews: StandStats["productViews"],
+  catalogIds: readonly string[],
+): Array<{ productId: string; count: number }> {
+  const counts = new Map(
+    productViews.map((item) => [item.productId, item.count]),
+  );
+  const catalog = new Set(catalogIds);
+  const ranked = catalogIds.map((productId) => ({
+    productId,
+    count: counts.get(productId) ?? 0,
+  }));
+  const unknown = productViews.filter((item) => !catalog.has(item.productId));
+  return [...ranked, ...unknown].sort(
+    (a, b) => b.count - a.count || a.productId.localeCompare(b.productId),
+  );
 }
 
 function asEventType(value: unknown): StandEventType | null {
@@ -87,13 +151,16 @@ export function summarizeStandEvents(
     }
   }
 
+  const productViews = [...productCounts.entries()]
+    .map(([productId, count]) => ({ productId, count }))
+    .sort((a, b) => b.count - a.count);
+
   return {
     visits,
     uniqueSessions: sessions.size,
     brochureDownloads,
     registerOpens,
-    productViews: [...productCounts.entries()]
-      .map(([productId, count]) => ({ productId, count }))
-      .sort((a, b) => b.count - a.count),
+    productViewCount: productViews.reduce((sum, item) => sum + item.count, 0),
+    productViews,
   };
 }

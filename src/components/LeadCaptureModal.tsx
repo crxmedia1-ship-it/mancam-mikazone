@@ -19,6 +19,12 @@ import {
 import { submitLead } from "@/app/actions/leads";
 import { PRODUCTS, type Product } from "@/data/products";
 import {
+  PRIMARY_APPLICATIONS,
+  PRIMARY_APPLICATION_LABELS,
+  PROFILE_TYPES,
+  PROFILE_TYPE_LABELS,
+  PURCHASE_VOLUMES,
+  PURCHASE_VOLUME_LABELS,
   isLeadNetworkError,
   leadSchema,
   type LeadInput,
@@ -40,6 +46,9 @@ type FormState = {
   email: string;
   phone: string;
   productsOfInterest: string[];
+  profileType: string;
+  purchaseVolume: string;
+  primaryApplication: string;
 };
 
 type PendingLead = LeadInput & { queuedAt: string };
@@ -50,6 +59,9 @@ const emptyForm: FormState = {
   email: "",
   phone: "",
   productsOfInterest: [],
+  profileType: "",
+  purchaseVolume: "",
+  primaryApplication: "",
 };
 
 function readPendingLeads(): PendingLead[] {
@@ -249,7 +261,12 @@ export function LeadCaptureModal({
 
     setStatusMessage(null);
 
-    const parsed = leadSchema.safeParse(form);
+    const parsed = leadSchema.safeParse({
+      ...form,
+      profileType: form.profileType || undefined,
+      purchaseVolume: form.purchaseVolume || undefined,
+      primaryApplication: form.primaryApplication || undefined,
+    });
     if (!parsed.success) {
       const nextErrors: Record<string, string[]> = {};
       for (const issue of parsed.error.issues) {
@@ -333,7 +350,8 @@ export function LeadCaptureModal({
               Leave your details
             </h2>
             <p className="mt-1.5 text-[13px] leading-5 text-white/80">
-              Four fields. Optional grades. We’ll quote after the show.
+              Name, company, and how to reach you. Role and volume help us quote
+              faster.
             </p>
           </div>
           <button
@@ -416,6 +434,51 @@ export function LeadCaptureModal({
                   error={firstError(fieldErrors, "phone")}
                   fieldKey="phone"
                   onChange={(value) => updateField("phone", value)}
+                />
+              </div>
+            </section>
+
+            <section className="mt-6">
+              <div className="mb-2 flex items-end justify-between gap-3 px-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky">
+                  Business
+                </p>
+                <p className="text-[11px] text-navy/35">Optional</p>
+              </div>
+              <div className="glass-panel overflow-hidden rounded-[24px] ring-1 ring-white/70">
+                <NativeSelect
+                  label="Your role"
+                  fieldKey="profileType"
+                  value={form.profileType}
+                  error={firstError(fieldErrors, "profileType")}
+                  onChange={(value) => updateField("profileType", value)}
+                  options={PROFILE_TYPES.map((id) => ({
+                    value: id,
+                    label: PROFILE_TYPE_LABELS[id],
+                  }))}
+                />
+                <NativeSelect
+                  label="Typical volume"
+                  fieldKey="purchaseVolume"
+                  value={form.purchaseVolume}
+                  error={firstError(fieldErrors, "purchaseVolume")}
+                  onChange={(value) => updateField("purchaseVolume", value)}
+                  options={PURCHASE_VOLUMES.map((id) => ({
+                    value: id,
+                    label: PURCHASE_VOLUME_LABELS[id],
+                  }))}
+                />
+                <NativeSelect
+                  label="Main application"
+                  fieldKey="primaryApplication"
+                  value={form.primaryApplication}
+                  error={firstError(fieldErrors, "primaryApplication")}
+                  last
+                  onChange={(value) => updateField("primaryApplication", value)}
+                  options={PRIMARY_APPLICATIONS.map((id) => ({
+                    value: id,
+                    label: PRIMARY_APPLICATION_LABELS[id],
+                  }))}
                 />
               </div>
             </section>
@@ -537,6 +600,54 @@ function ProductChip({
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="px-4 pb-2 text-[12px] text-red-700">{message}</p>;
+}
+
+function NativeSelect({
+  label,
+  value,
+  onChange,
+  error,
+  fieldKey,
+  options,
+  last = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  fieldKey: string;
+  options: ReadonlyArray<{ value: string; label: string }>;
+  last?: boolean;
+}) {
+  const inputId = useId();
+
+  return (
+    <div
+      data-field={fieldKey}
+      className={last ? "" : "border-b border-navy/10"}
+    >
+      <label htmlFor={inputId} className="block px-4 pt-3 pb-2 focus-within:bg-white/35">
+        <span className="block text-[12px] font-semibold text-sky">
+          {label}
+        </span>
+        <select
+          id={inputId}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onFocus={(event) => revealField(event.currentTarget)}
+          className="mt-0.5 h-11 w-full bg-transparent text-[16px] tracking-tight text-navy outline-none"
+        >
+          <option value="">Select…</option>
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <FieldError message={error} />
+    </div>
+  );
 }
 
 function NativeField({

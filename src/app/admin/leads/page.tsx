@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -10,15 +11,18 @@ import {
 } from "react";
 import Image from "next/image";
 import {
-  Download,
-  Eye,
+  ClipboardList,
+  FileDown,
   FileSpreadsheet,
   LoaderCircle,
   Lock,
   Mail,
+  MessageCircle,
+  MousePointerClick,
   Phone,
   QrCode,
   RefreshCw,
+  Search,
   Star,
   Users,
 } from "lucide-react";
@@ -28,14 +32,28 @@ import {
   updateLeadRating,
 } from "@/app/actions/admin";
 import { PRODUCTS, getProductById } from "@/data/products";
+import { type LeadRecord } from "@/lib/lead";
 import {
-  PRIMARY_APPLICATION_LABELS,
-  PROFILE_TYPE_LABELS,
-  PURCHASE_VOLUME_LABELS,
-  type LeadRecord,
-} from "@/lib/lead";
+  applicationLabel,
+  downloadNamedFile,
+  formatCapturedAt,
+  leadSearchHaystack,
+  productSummaryExportRows,
+  profileLabel,
+  prospectExportRows,
+  prospectsToCsv,
+  sheetColumnWidths,
+  sortLeads,
+  standExportBasename,
+  trafficExportRows,
+  volumeLabel,
+  whatsappHref,
+} from "@/lib/lead-export";
 import {
+  completeProductRanking,
   emptyStandStats,
+  sharePercent,
+  standFunnel,
   summarizeStandEvents,
   type StandStats,
 } from "@/lib/events";
@@ -43,6 +61,7 @@ import {
 import { LOGO_SRC } from "@/lib/contact";
 
 const ADMIN_UNLOCK_KEY = "mancam-mikazone:admin-unlocked";
+const ADMIN_IDLE_LOCK_MS = 3 * 60 * 1000;
 const EVENT_PIN = process.env.NEXT_PUBLIC_EVENT_PIN?.trim() || "0237";
 
 const unlockListeners = new Set<() => void>();
@@ -81,101 +100,6 @@ function setSessionUnlocked(next: boolean) {
     // Private mode can block sessionStorage; in-memory state still unlocks this tab.
   }
   emitUnlocked();
-}
-
-function profileLabel(value: string): string {
-  return (
-    PROFILE_TYPE_LABELS[value as keyof typeof PROFILE_TYPE_LABELS] ?? value
-  );
-}
-
-function volumeLabel(value: string): string {
-  return (
-    PURCHASE_VOLUME_LABELS[value as keyof typeof PURCHASE_VOLUME_LABELS] ??
-    value
-  );
-}
-
-function applicationLabel(value: string): string {
-  return (
-    PRIMARY_APPLICATION_LABELS[
-      value as keyof typeof PRIMARY_APPLICATION_LABELS
-    ] ?? value
-  );
-}
-
-function productLabels(ids: readonly string[]): string {
-  return ids
-    .map((id) => getProductById(id)?.shortName ?? id)
-    .join(", ");
-}
-
-function formatCapturedAt(value: string | null): string {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function fileStamp(): string {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
-}
-
-function csvCell(value: string | number): string {
-  const text = String(value);
-  if (/[",\n]/.test(text)) return `"${text.replaceAll('"', '""')}"`;
-  return text;
-}
-
-function downloadCsvBackup(leads: LeadRecord[], stats: StandStats) {
-  const header = [
-    "Name",
-    "Company",
-    "Email",
-    "Phone",
-    "Products",
-    "Rating",
-    "Notes",
-    "Captured",
-  ];
-  const rows = leads.map((lead) => [
-    lead.fullName,
-    lead.companyName,
-    lead.email,
-    lead.phone,
-    productLabels(lead.productsOfInterest),
-    lead.rating ?? "",
-    lead.notes,
-    lead.createdAt ?? "",
-  ]);
-  const traffic = [
-    [],
-    ["Metric", "Value"],
-    ["QR / link visits", stats.visits],
-    ["Unique phones / sessions", stats.uniqueSessions],
-    ["Registrations", leads.length],
-    ["Brochure downloads", stats.brochureDownloads],
-    ["Register form opens", stats.registerOpens],
-  ];
-  const csv = [header, ...rows, ...traffic]
-    .map((row) => row.map(csvCell).join(","))
-    .join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `Mancam-MikaZone-stand-${fileStamp()}.csv`;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export default function AdminLeadsPage() {
@@ -325,6 +249,12 @@ function PinLockScreen({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
+function productRankCopy(id: string): { title: string; subtitle: string | null } {
+  const product = getProductById(id);
+  if (!product) return { title: id, subtitle: null };
+  return { title: product.name, subtitle: product.chemicalName };
+}
+
 function LeadsDashboard({ onLock }: { onLock: () => void }) {
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [stats, setStats] = useState<StandStats>(emptyStandStats);
@@ -333,7 +263,14 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<"ok" | "error">("ok");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<"newest" | "company" | "rating">("newest");
   const notesDrafts = useRef<Record<string, string>>({});
+  const onLockRef = useRef(onLock);
+
+  useEffect(() => {
+    onLockRef.current = onLock;
+  }, [onLock]);
 
   const loadLeads = useCallback(async (mode: "initial" | "manual" | "poll" = "initial") => {
     if (mode === "manual") setRefreshing(true);
@@ -394,6 +331,38 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
     };
   }, [loadLeads]);
 
+  useEffect(() => {
+    const bumpEvents: Array<keyof WindowEventMap> = [
+      "pointerdown",
+      "keydown",
+      "touchstart",
+      "scroll",
+    ];
+    let timer = window.setTimeout(lockNow, ADMIN_IDLE_LOCK_MS);
+
+    function lockNow() {
+      const active = document.activeElement;
+      if (active instanceof HTMLElement) active.blur();
+      onLockRef.current();
+    }
+
+    function bump() {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(lockNow, ADMIN_IDLE_LOCK_MS);
+    }
+
+    for (const type of bumpEvents) {
+      window.addEventListener(type, bump, { capture: true, passive: true });
+    }
+
+    return () => {
+      window.clearTimeout(timer);
+      for (const type of bumpEvents) {
+        window.removeEventListener(type, bump, { capture: true });
+      }
+    };
+  }, []);
+
   async function updateRating(leadId: string, rating: number) {
     const nextRating = leads.find((lead) => lead.id === leadId)?.rating === rating ? null : rating;
     setLeads((current) =>
@@ -438,72 +407,59 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
     }
   }
 
+  const visibleLeads = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const filtered = needle
+      ? leads.filter((lead) => leadSearchHaystack(lead).includes(needle))
+      : leads;
+    return sortLeads(filtered, sort);
+  }, [leads, query, sort]);
+
   async function exportExcel() {
     setExporting(true);
+    const basename = standExportBasename();
     try {
       const XLSX = await import("xlsx");
-      const leadRows = leads.map((lead) => ({
-        Name: lead.fullName,
-        Company: lead.companyName,
-        Email: lead.email,
-        Phone: lead.phone,
-        Profile: profileLabel(lead.profileType),
-        Volume: volumeLabel(lead.purchaseVolume),
-        Application: applicationLabel(lead.primaryApplication),
-        Products: productLabels(lead.productsOfInterest),
-        Rating: lead.rating ?? "",
-        Notes: lead.notes,
-        Captured: lead.createdAt ?? "",
-        Source: lead.source ?? "",
-      }));
-
-      const summaryRows = [
-        { Metric: "QR / link visits", Value: stats.visits },
-        { Metric: "Unique phones / sessions", Value: stats.uniqueSessions },
-        { Metric: "Registrations", Value: leads.length },
-        { Metric: "Brochure downloads", Value: stats.brochureDownloads },
-        { Metric: "Register form opens", Value: stats.registerOpens },
-      ];
-
-      const productRows =
-        stats.productViews.length > 0
-          ? stats.productViews.map((item, index) => ({
-              Rank: index + 1,
-              Product: getProductById(item.productId)?.shortName ?? item.productId,
-              SpecTaps: item.count,
-            }))
-          : PRODUCTS.map((product) => ({
-              Rank: "",
-              Product: product.shortName,
-              SpecTaps: 0,
-            }));
+      const leadRows = prospectExportRows(leads);
+      const summaryRows = trafficExportRows(stats, leads.length);
+      const productRows = productSummaryExportRows(leads, stats);
 
       const workbook = XLSX.utils.book_new();
       const leadsSheet = XLSX.utils.json_to_sheet(
-        leadRows.length > 0 ? leadRows : [{ Name: "" }],
+        leadRows.length > 0
+          ? leadRows
+          : [{ "Full name": "", Company: "", Email: "", Phone: "" }],
       );
-      leadsSheet["!cols"] = Object.keys(leadRows[0] ?? { Name: "" }).map(() => ({
-        wch: 24,
-      }));
-      XLSX.utils.book_append_sheet(workbook, leadsSheet, "Leads");
-      XLSX.utils.book_append_sheet(
-        workbook,
-        XLSX.utils.json_to_sheet(summaryRows),
-        "Traffic",
+      leadsSheet["!cols"] = sheetColumnWidths(
+        leadRows.length > 0
+          ? leadRows
+          : [{ "Full name": "", Company: "", Email: "", Phone: "" }],
       );
-      XLSX.utils.book_append_sheet(
-        workbook,
-        XLSX.utils.json_to_sheet(productRows),
-        "Product taps",
-      );
-      XLSX.writeFile(workbook, `Mancam-MikaZone-stand-${fileStamp()}.xlsx`);
+      XLSX.utils.book_append_sheet(workbook, leadsSheet, "Prospects");
+      const trafficSheet = XLSX.utils.json_to_sheet(summaryRows);
+      trafficSheet["!cols"] = [{ wch: 28 }, { wch: 14 }];
+      XLSX.utils.book_append_sheet(workbook, trafficSheet, "Traffic");
+      const productSheet = XLSX.utils.json_to_sheet(productRows);
+      productSheet["!cols"] = sheetColumnWidths(productRows);
+      XLSX.utils.book_append_sheet(workbook, productSheet, "Products");
+      XLSX.writeFile(workbook, `${basename}.xlsx`);
       setStatusTone("ok");
-      setStatus("Exported leads, traffic, and product taps to Excel.");
+      setStatus(
+        leads.length === 0
+          ? "Exported traffic and product interest. No registrations yet."
+          : `Exported ${leads.length} prospect${leads.length === 1 ? "" : "s"} to Excel.`,
+      );
     } catch (error) {
       try {
-        downloadCsvBackup(leads, stats);
+        downloadNamedFile(
+          prospectsToCsv(leads),
+          `${basename}.csv`,
+          "text/csv;charset=utf-8",
+        );
         setStatusTone("ok");
-        setStatus("Excel was blocked on this phone, so a CSV file was downloaded instead.");
+        setStatus(
+          "Excel was blocked on this phone, so a CSV of prospects was downloaded instead.",
+        );
       } catch {
         setStatusTone("error");
         setStatus(
@@ -559,6 +515,7 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
             <DashboardActions
               refreshing={refreshing}
               exporting={exporting}
+              exportCount={leads.length}
               onRefresh={() => void loadLeads("manual")}
               onExport={() => void exportExcel()}
               onLock={onLock}
@@ -588,77 +545,113 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
           />
           <StatCard
             icon={<Users className="size-4" />}
-            label="Unique phones"
+            label="Unique visitors"
             value={stats.uniqueSessions}
           />
           <StatCard
-            icon={<Download className="size-4" />}
+            icon={<ClipboardList className="size-4" />}
             label="Registrations"
             value={leads.length}
           />
           <StatCard
-            icon={<Eye className="size-4" />}
+            icon={<FileDown className="size-4" />}
             label="Catalog downloads"
             value={stats.brochureDownloads}
           />
           <StatCard
-            icon={<Users className="size-4" />}
+            icon={<MousePointerClick className="size-4" />}
             label="Form opens"
             value={stats.registerOpens}
             className="col-span-2 xl:col-span-1"
           />
         </div>
 
+        <StandFunnelCard stats={stats} registrations={leads.length} />
+
         <div className="mb-5 overflow-hidden rounded-[24px] bg-white ring-1 ring-usa/10">
           <div className="flex items-center justify-between gap-3 px-4 py-3">
-            <h2 className="text-sm font-semibold text-usa">Grades opened</h2>
+            <h2 className="text-sm font-semibold text-usa">Products viewed</h2>
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-usa/40">
-              Spec taps
+              Details opened
             </p>
           </div>
-          {stats.productViews.length === 0 ? (
-            <p className="px-4 pb-5 text-sm text-slate-500">
-              Numbers appear as visitors open grades on the stand QR.
-            </p>
-          ) : (
-            <ol className="divide-y divide-usa/10">
-              {stats.productViews.slice(0, 8).map((item, index) => {
-                const max = stats.productViews[0]?.count || 1;
-                return (
-                  <li
-                    key={item.productId}
-                    className="flex items-center gap-3 px-4 py-3"
-                  >
-                    <span className="w-5 text-xs font-bold text-usa/35">
-                      {index + 1}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-usa">
-                        {getProductById(item.productId)?.shortName ?? item.productId}
+          <ol className="divide-y divide-usa/10">
+            {completeProductRanking(
+              stats.productViews,
+              PRODUCTS.map((product) => product.id),
+            ).map((item, index) => {
+              const copy = productRankCopy(item.productId);
+              const max = Math.max(stats.productViewCount > 0 ? (stats.productViews[0]?.count ?? 1) : 1, 1);
+              return (
+                <li
+                  key={item.productId}
+                  className={`flex items-center gap-3 px-4 py-3 ${item.count === 0 ? "opacity-45" : ""}`}
+                >
+                  <span className="w-5 text-xs font-bold text-usa/35">
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-usa">
+                      {copy.title}
+                    </p>
+                    {copy.subtitle ? (
+                      <p className="truncate text-[11px] text-usa/45">
+                        {copy.subtitle}
                       </p>
-                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sand">
-                        <div
-                          className="h-full rounded-full bg-mika"
-                          style={{ width: `${Math.round((item.count / max) * 100)}%` }}
-                        />
-                      </div>
+                    ) : null}
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sand">
+                      <div
+                        className="h-full rounded-full bg-mika"
+                        style={{
+                          width: `${Math.round((item.count / max) * 100)}%`,
+                        }}
+                      />
                     </div>
-                    <span className="tabular-nums text-sm font-bold text-usa">
-                      {item.count}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
+                  </div>
+                  <span className="tabular-nums text-sm font-bold text-usa">
+                    {item.count}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
         </div>
 
         <div className="overflow-hidden rounded-[24px] bg-white ring-1 ring-usa/10">
-          <div className="flex items-center justify-between px-4 py-3">
-            <h2 className="text-sm font-semibold text-usa">Prospects</h2>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-usa/40">
-              {leads.length} live
-            </p>
+          <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-usa">Prospects</h2>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-usa/40">
+                {query.trim()
+                  ? `${visibleLeads.length} of ${leads.length}`
+                  : `${leads.length} live`}
+              </p>
+            </div>
+            {leads.length > 0 ? (
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <label className="relative block min-w-0 flex-1 sm:w-56">
+                  <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-usa/35" />
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search name, company, phone…"
+                    className="h-11 w-full rounded-2xl border border-usa/10 bg-sand pl-9 pr-3 text-[16px] text-usa outline-none placeholder:text-usa/35 focus:border-mika lg:text-sm"
+                  />
+                </label>
+                <select
+                  value={sort}
+                  onChange={(event) =>
+                    setSort(event.target.value as "newest" | "company" | "rating")
+                  }
+                  className="h-11 rounded-2xl border border-usa/10 bg-sand px-3 text-[16px] text-usa outline-none focus:border-mika lg:text-sm"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="company">Company A–Z</option>
+                  <option value="rating">Highest rating</option>
+                </select>
+              </div>
+            ) : null}
           </div>
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-20 text-usa/50">
@@ -666,16 +659,27 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
               Loading prospects…
             </div>
           ) : leads.length === 0 ? (
-            <div className="px-6 py-16 text-center">
-              <p className="font-display text-2xl text-usa">No prospects yet</p>
+            <div className="px-6 py-10 text-center">
+              <p className="font-display text-2xl text-usa">No registrations yet</p>
+              <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+                {stats.registerOpens > 0
+                  ? `${stats.registerOpens} visitor${
+                      stats.registerOpens === 1 ? "" : "s"
+                    } opened the form; none finished a registration.`
+                  : "New stand registrations appear here automatically."}
+              </p>
+            </div>
+          ) : visibleLeads.length === 0 ? (
+            <div className="px-6 py-10 text-center">
+              <p className="font-display text-2xl text-usa">No matching prospects</p>
               <p className="mt-2 text-sm text-slate-500">
-                New stand registrations appear here automatically.
+                Try another name, company, or product.
               </p>
             </div>
           ) : (
             <>
               <div className="space-y-3 p-3 lg:hidden">
-                {leads.map((lead) => (
+                {visibleLeads.map((lead) => (
                   <LeadMobileCard
                     key={lead.id}
                     lead={lead}
@@ -688,19 +692,21 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
                 ))}
               </div>
               <div className="hidden overflow-x-auto lg:block">
-                <table className="min-w-[980px] w-full text-left text-sm">
+                <table className="min-w-[1080px] w-full text-left text-sm">
                   <thead className="bg-sand text-xs font-bold uppercase tracking-wide text-usa/70">
                     <tr>
                       <th className="px-4 py-3">Contact</th>
-                      <th className="px-4 py-3">Company</th>
+                      <th className="px-4 py-3">Company / role</th>
                       <th className="px-4 py-3">Volume</th>
-                      <th className="px-4 py-3">Interest</th>
+                      <th className="px-4 py-3">Products</th>
                       <th className="px-4 py-3">Rating</th>
                       <th className="px-4 py-3">Notes</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {leads.map((lead) => (
+                    {visibleLeads.map((lead) => {
+                      const whatsapp = whatsappHref(lead.phone);
+                      return (
                       <tr
                         key={lead.id}
                         className="border-t border-usa/10 align-top transition hover:bg-sand/60"
@@ -719,6 +725,16 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
                           >
                             {lead.phone}
                           </a>
+                          {whatsapp ? (
+                            <a
+                              href={whatsapp}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-0.5 block text-mika-dark hover:underline"
+                            >
+                              WhatsApp
+                            </a>
+                          ) : null}
                           <p className="mt-2 text-xs text-usa/40">
                             {formatCapturedAt(lead.createdAt)}
                           </p>
@@ -726,14 +742,14 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
                         <td className="px-4 py-4">
                           <p className="font-medium text-usa">{lead.companyName}</p>
                           <p className="mt-1 text-slate-500">
-                            {profileLabel(lead.profileType)}
+                            {profileLabel(lead.profileType) || "—"}
                           </p>
                           <p className="mt-1 text-xs text-usa/40">
-                            {applicationLabel(lead.primaryApplication)}
+                            {applicationLabel(lead.primaryApplication) || "—"}
                           </p>
                         </td>
                         <td className="px-4 py-4 font-medium text-usa">
-                          {volumeLabel(lead.purchaseVolume)}
+                          {volumeLabel(lead.purchaseVolume) || "—"}
                         </td>
                         <td className="px-4 py-4">
                           <ProductTags ids={lead.productsOfInterest} />
@@ -759,7 +775,8 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
                           />
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -772,11 +789,64 @@ function LeadsDashboard({ onLock }: { onLock: () => void }) {
         <DashboardActions
           refreshing={refreshing}
           exporting={exporting}
+          exportCount={leads.length}
           onRefresh={() => void loadLeads("manual")}
           onExport={() => void exportExcel()}
           onLock={onLock}
         />
       </div>
+    </div>
+  );
+}
+
+function StandFunnelCard({
+  stats,
+  registrations,
+}: {
+  stats: StandStats;
+  registrations: number;
+}) {
+  const steps = standFunnel(stats, registrations);
+  const formRate = sharePercent(registrations, stats.registerOpens);
+
+  return (
+    <div className="mb-5 overflow-hidden rounded-[24px] bg-white ring-1 ring-usa/10">
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <h2 className="text-sm font-semibold text-usa">Stand funnel</h2>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-usa/40">
+          {formRate === null ? "Awaiting forms" : `${formRate}% form → lead`}
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 px-4 pb-4 md:grid-cols-4">
+        {steps.map((step) => (
+          <div key={step.key} className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-usa/40">
+              {step.label}
+            </p>
+            <p className="mt-1 font-display text-[1.65rem] leading-none tabular-nums text-usa">
+              {step.value}
+            </p>
+            <p className="mt-1 text-[12px] text-slate-500">
+              {step.key === "registrations" && stats.registerOpens > 0
+                ? `${formRate}% of form opens`
+                : step.shareOfVisits === null
+                  ? "—"
+                  : step.key === "visits"
+                    ? "All traffic"
+                    : `${step.shareOfVisits}% of visits`}
+            </p>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sand">
+              <div
+                className="h-full rounded-full bg-mika"
+                style={{ width: `${step.shareOfVisits ?? 0}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="border-t border-usa/10 px-4 py-3 text-[12px] leading-5 text-slate-500">
+        Visitors can open the form from the homepage without opening a product.
+      </p>
     </div>
   );
 }
@@ -808,12 +878,14 @@ function StatCard({
 function DashboardActions({
   refreshing,
   exporting,
+  exportCount,
   onRefresh,
   onExport,
   onLock,
 }: {
   refreshing: boolean;
   exporting: boolean;
+  exportCount: number;
   onRefresh: () => void;
   onExport: () => void;
   onLock: () => void;
@@ -840,11 +912,13 @@ function DashboardActions({
         ) : (
           <FileSpreadsheet className="size-4" />
         )}
-        Export Excel
+        {exportCount > 0 ? `Export ${exportCount}` : "Export Excel"}
       </button>
       <button
         type="button"
         onClick={onLock}
+        title="Lock now. Also locks after 3 minutes idle."
+        aria-label="Lock panel. Also locks after 3 minutes idle."
         className="inline-flex h-12 items-center gap-2 rounded-2xl bg-white px-3 text-sm font-semibold text-usa ring-1 ring-usa/10 lg:px-4"
       >
         <Lock className="size-4" />
@@ -865,33 +939,59 @@ function LeadMobileCard({
   onSaveNotes: (notes: string) => void;
   onDraftNotes: (notes: string) => void;
 }) {
+  const whatsapp = whatsappHref(lead.phone);
+
   return (
     <article className="rounded-[22px] bg-sand/80 p-4 ring-1 ring-usa/10">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-semibold text-usa">{lead.fullName}</p>
           <p className="truncate text-sm text-slate-600">{lead.companyName}</p>
+          <p className="mt-1 text-[12px] text-usa/55">
+            {[
+              profileLabel(lead.profileType),
+              volumeLabel(lead.purchaseVolume),
+            ]
+              .filter(Boolean)
+              .join(" · ") || "Role / volume not given"}
+          </p>
+          {applicationLabel(lead.primaryApplication) ? (
+            <p className="text-[12px] text-usa/45">
+              {applicationLabel(lead.primaryApplication)}
+            </p>
+          ) : null}
         </div>
         <p className="shrink-0 text-[11px] text-usa/40">
           {formatCapturedAt(lead.createdAt)}
         </p>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className={`mt-3 grid gap-2 ${whatsapp ? "grid-cols-3" : "grid-cols-2"}`}>
         <a
           href={`tel:${lead.phone}`}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-usa text-sm font-semibold text-white"
+          className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl bg-usa px-2 text-sm font-semibold text-white"
         >
           <Phone className="size-4" />
           Call
         </a>
         <a
           href={`mailto:${lead.email}`}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-white text-sm font-semibold text-usa ring-1 ring-usa/10"
+          className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl bg-white px-2 text-sm font-semibold text-usa ring-1 ring-usa/10"
         >
           <Mail className="size-4" />
           Email
         </a>
+        {whatsapp ? (
+          <a
+            href={whatsapp}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl bg-mika px-2 text-sm font-semibold text-white"
+          >
+            <MessageCircle className="size-4" />
+            WhatsApp
+          </a>
+        ) : null}
       </div>
 
       <p className="mt-3 break-all text-[13px] text-usa/70">{lead.phone}</p>
