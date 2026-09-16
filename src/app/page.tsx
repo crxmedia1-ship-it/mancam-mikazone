@@ -17,14 +17,11 @@ import {
 } from "@/components/StandGuide";
 import { StandTracker, recordStandEvent } from "@/components/StandTracker";
 import { getProductById, type Product } from "@/data/products";
-import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { downloadMikaZoneCatalog } from "@/lib/catalog";
 import {
   COMPANY_NAME,
   LOGO_SRC,
   PARTNER_NAME,
-  STAND_PHONE_SHORT,
-  WHATSAPP_HREF,
 } from "@/lib/contact";
 
 export default function Home() {
@@ -106,14 +103,6 @@ export default function Home() {
             priority
             className="h-[4.35rem] w-auto max-w-[min(92%,360px)] object-contain sm:h-[5.75rem] sm:max-w-[440px] xl:h-[6.5rem] xl:max-w-[520px]"
           />
-          <a
-            href={WHATSAPP_HREF}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 text-[11px] font-semibold text-slate-500 transition hover:text-mika sm:text-xs"
-          >
-            WhatsApp {STAND_PHONE_SHORT}
-          </a>
           <div className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50/90 px-1.5">
             <StandGuide active={pane} onSelect={selectPane} />
           </div>
@@ -177,8 +166,6 @@ export default function Home() {
         onClose={() => setModalOpen(false)}
         onRegistered={() => setRegistered(true)}
       />
-
-      {showIntro || modalOpen ? null : <WhatsAppFab />}
     </div>
   );
 }

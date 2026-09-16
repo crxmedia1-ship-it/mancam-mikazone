@@ -17,12 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { submitLead } from "@/app/actions/leads";
-import { WhatsAppMark } from "@/components/WhatsAppFab";
 import { PRODUCTS, type Product } from "@/data/products";
-import {
-  STAND_PHONE_SHORT,
-  WHATSAPP_HREF,
-} from "@/lib/contact";
 import {
   isLeadNetworkError,
   leadSchema,
@@ -500,15 +495,6 @@ function SuccessState({
         <p className="mt-3 max-w-sm text-[15px] leading-6 text-slate-600">
           {message}
         </p>
-        <a
-          href={WHATSAPP_HREF}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-sm font-bold text-white"
-        >
-          <WhatsAppMark className="size-4" />
-          <span>Chat Booth Rep ({STAND_PHONE_SHORT})</span>
-        </a>
       </div>
       <div className="shrink-0 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
         <button

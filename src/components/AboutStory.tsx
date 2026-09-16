@@ -51,11 +51,19 @@ function PhotoSlot({
   note,
   aspect,
   bleed = false,
+  src,
+  alt,
+  fit = "cover",
+  position = "object-center",
 }: {
   label: string;
   note: string;
   aspect: string;
   bleed?: boolean;
+  src?: string;
+  alt?: string;
+  fit?: "cover" | "contain";
+  position?: string;
 }) {
   return (
     <figure className={bleed ? "w-full min-w-0" : "min-w-0"}>
@@ -64,27 +72,43 @@ function PhotoSlot({
           bleed ? "" : "rounded-[26px] ring-1 ring-slate-200/80"
         }`}
       >
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.55)_0%,transparent_46%),linear-gradient(to_top,rgba(10,31,61,0.22),transparent_42%)]"
-        />
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, rgb(15 23 42 / 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgb(15 23 42 / 0.05) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-          <p className="font-display text-[1.45rem] leading-none tracking-tight text-navy sm:text-3xl">
-            {label}
-          </p>
-          <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-            Photo to come
-          </p>
-        </div>
+        {src ? (
+          <Image
+            src={src}
+            alt={alt ?? label}
+            fill
+            sizes={
+              bleed
+                ? "100vw"
+                : "(min-width: 1024px) 28rem, (min-width: 640px) 50vw, 50vw"
+            }
+            className={`${fit === "contain" ? "object-contain" : "object-cover"} ${position}`}
+          />
+        ) : (
+          <>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.55)_0%,transparent_46%),linear-gradient(to_top,rgba(10,31,61,0.22),transparent_42%)]"
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-[0.35]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to right, rgb(15 23 42 / 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgb(15 23 42 / 0.05) 1px, transparent 1px)",
+                backgroundSize: "28px 28px",
+              }}
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+              <p className="font-display text-[1.45rem] leading-none tracking-tight text-navy sm:text-3xl">
+                {label}
+              </p>
+              <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Photo to come
+              </p>
+            </div>
+          </>
+        )}
       </div>
       <figcaption className={`mt-2.5 text-[13px] leading-5 text-slate-500 ${bleed ? "px-4 sm:px-6 lg:px-8 xl:px-12" : ""}`}>
         {note}
@@ -127,7 +151,10 @@ export function AboutStory({
           bleed
           aspect="aspect-[16/10] sm:aspect-[21/9]"
           label="Plant / mill"
-          note="Production floor — drop in a wide mill or warehouse still."
+          src="/about/plant-mill.jpg"
+          alt="MikaZone cellulose ether manufacturing facility"
+          position="object-[center_72%]"
+          note="MikaZone cellulose ether plant — the source of quality and innovation."
         />
       </div>
 
@@ -200,11 +227,17 @@ export function AboutStory({
           <PhotoSlot
             aspect="aspect-[3/4] sm:aspect-[4/5]"
             label="On the wall"
+            src="/about/on-the-wall.jpg"
+            alt="Troweling wall putty with a MikaZone cellulose ether mix"
+            position="object-[68%_center]"
             note="Trowel, EIFS, or putty in use."
           />
           <PhotoSlot
             aspect="aspect-[3/4] sm:aspect-[4/5]"
             label="BuildExpo stand"
+            src="/about/buildexpo-stand.jpg"
+            alt="MikaZone USA booth at BuildExpo South Florida"
+            fit="contain"
             note="The South Florida booth, Sep 30 – Oct 1."
           />
         </div>
@@ -255,13 +288,14 @@ export function AboutStory({
             Packaging & storage
           </p>
           <h3 className="font-display mt-3 max-w-2xl text-[1.85rem] leading-[1.04] tracking-tight text-navy sm:text-[2.4rem]">
-            25 kg PE-lined bags. Palletized, shrink-wrapped, ready to quote.
+            20 kg or 25 kg PE-lined bags, depending on the additive. Palletized,
+            shrink-wrapped, ready to quote.
           </h3>
           <p className="mt-4 max-w-2xl text-[16px] leading-8 text-slate-600">
-            Standard pack is a multi-layer paper bag with PE liner. 20 ft
-            container: 600 kg × 20 pallets, 12,000 kg. 40 ft: 700 kg × 40
-            pallets, 28,000 kg. Store dry and cool; use within 12 months. Keep
-            pallets unstacked to avoid caking.
+            Standard pack is a multi-layer paper bag with PE liner — 20 kg or
+            25 kg by grade. 20 ft container: 600 kg × 20 pallets, 12,000 kg.
+            40 ft: 700 kg × 40 pallets, 28,000 kg. Store dry and cool; use
+            within 12 months. Keep pallets unstacked to avoid caking.
           </p>
         </div>
         <div className="mt-8">
