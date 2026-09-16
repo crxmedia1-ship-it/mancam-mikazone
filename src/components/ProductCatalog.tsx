@@ -140,14 +140,14 @@ function ProductCard({
         <h3 className="mt-1 text-[1.05rem] font-semibold leading-6 tracking-tight text-slate-900 sm:mt-2 sm:text-[1.15rem]">
           {product.shortName}
         </h3>
-        <p className="mt-0.5 line-clamp-1 text-[12px] text-slate-500 sm:mt-1 sm:text-[13px]">
+        <p className="mt-0.5 line-clamp-2 text-[12px] leading-4 text-slate-500 sm:mt-1 sm:text-[13px] sm:leading-5">
           {product.chemicalName}
         </p>
         <p className="mt-2 hidden line-clamp-2 text-[14px] leading-6 text-slate-600 sm:mt-3 sm:block">
           {product.summary}
         </p>
         <span className="mt-3 inline-flex min-h-9 items-center justify-center rounded-xl border border-slate-200 px-3 text-[13px] font-bold text-slate-900 sm:mt-5 sm:min-h-11 sm:rounded-2xl sm:px-4 sm:text-sm">
-          Open specs
+          View product details
         </span>
       </div>
     </button>
