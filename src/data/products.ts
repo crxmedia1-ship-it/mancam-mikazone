@@ -86,6 +86,7 @@ export type Product = {
   accent: string;
   packFront?: string;
   packSide?: string;
+  packFit?: "contain" | "cover";
 };
 
 export const PRODUCTS: readonly Product[] = [
@@ -374,6 +375,8 @@ export const PRODUCTS: readonly Product[] = [
     },
     recommendedDosage: "0.20 – 2.0% by weight of dry mix (0.05 – 0.30% in selected gypsum systems)",
     accent: "#1F6F8B",
+    packFront: "/products/shp.jpg",
+    packFit: "cover",
   },
   {
     id: "gypsum-retarder",
@@ -427,7 +430,7 @@ export const PRODUCTS: readonly Product[] = [
     name: "Powder Defoamer (DE401 / DE402)",
     shortName: "DE401 / DE402",
     brand: "MikaUltra",
-    chemicalName: "Silicone / polyether powder defoamer for dry-mix systems",
+    chemicalName: "Powder defoamer for dry-mix systems",
     summary:
       "Rapid foam-control powder for dry-mix mortars, self-leveling compounds, grouts, and spray-applied systems. DE401 and DE402 collapse entrapped air so mixes densify, flow without pinholes, and cure with higher compactness.",
     category: "specialty",

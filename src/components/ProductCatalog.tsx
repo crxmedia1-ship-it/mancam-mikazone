@@ -157,7 +157,11 @@ function PackVisual({ product }: { product: Product }) {
           alt=""
           width={180}
           height={220}
-          className="relative mb-1.5 h-24 w-auto object-contain drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)] sm:mb-2 sm:h-32 xl:h-40 2xl:h-48"
+          className={
+            product.packFit === "cover"
+              ? "absolute inset-0 h-full w-full object-cover"
+              : "relative mb-1.5 h-24 w-auto object-contain drop-shadow-[0_10px_14px_rgba(15,23,42,0.14)] sm:mb-2 sm:h-32 xl:h-40 2xl:h-48"
+          }
         />
       ) : (
         <span

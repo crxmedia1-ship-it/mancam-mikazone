@@ -117,7 +117,11 @@ export function ProductSheet({
                 <img
                   src={product.packFront}
                   alt=""
-                  className="mx-auto mb-5 h-36 w-auto object-contain drop-shadow-[0_16px_22px_rgba(15,23,42,0.16)]"
+                  className={
+                    product.packFit === "cover"
+                      ? "mb-5 h-40 w-full rounded-2xl object-cover"
+                      : "mx-auto mb-5 h-36 w-auto object-contain drop-shadow-[0_16px_22px_rgba(15,23,42,0.16)]"
+                  }
                 />
               ) : null}
 

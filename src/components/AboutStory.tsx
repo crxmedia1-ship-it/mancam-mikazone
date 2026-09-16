@@ -181,9 +181,12 @@ export function AboutStory({
             </p>
           </div>
           <PhotoSlot
-            aspect="aspect-[4/3]"
+            aspect="aspect-[4/5] sm:aspect-[4/3]"
             label="Application lab"
-            note="QC / applications lab — a bench or mixer still works here."
+            src="/about/application-lab.jpg"
+            alt="MikaZone quality lab injecting a sample into analytical equipment"
+            position="object-[center_18%]"
+            note="QC / applications lab — sample prep on the MikaZone bench."
           />
         </div>
       </section>
@@ -301,9 +304,12 @@ export function AboutStory({
         <div className="mt-8">
           <PhotoSlot
             bleed
-            aspect="aspect-[16/9] sm:aspect-[21/8]"
+            aspect="aspect-[16/9] sm:aspect-[21/9]"
             label="Bags & logistics"
-            note="Pallet stacks, container, or pack still — full-width works here."
+            src="/about/bags-logistics.jpg"
+            alt="Pallet of MikaZone bags on the packing line"
+            position="object-center"
+            note="Palletized 20 kg and 25 kg bags, shrink-wrapped and ready to ship."
           />
         </div>
       </section>
